@@ -9,32 +9,44 @@
 
   var FAQ = [
     {
+      id: 'escola_legal',
       chip: 'O que é a Escola Legal?',
+      desc: 'O que é a assessoria jurídica Escola Legal / o programa de assessoria',
       keys: ['escola legal', 'assessoria', 'assessoria juridica', 'programa', 'o que e a escola'],
       a: 'A <strong>Escola Legal</strong> é a assessoria jurídica completa, personalizada e contínua da Dra. Deliane Santos para escolas que buscam crescimento, segurança, organização e fortalecimento institucional. 💼<br><br>Conheça os detalhes aqui: <a class="dsw-link" href="escola-legal.html">página da Escola Legal</a>.'
     },
     {
+      id: 'valores',
       chip: 'Valores e condições',
+      desc: 'Preço, valores, mensalidade, condição de adesão, formas de pagamento, PIX',
       keys: ['valor', 'valores', 'preco', 'preço', 'quanto custa', 'mensalidade', 'condicao', 'condição', 'adesao', 'adesão', 'pagamento', 'pix'],
       a: 'As condições de adesão da <strong>Escola Legal</strong> são exclusivas para escolas parceiras, com oferta especial para as primeiras aderentes. 💛<br><br>Os valores e o pagamento (inclusive via PIX) ficam na <a class="dsw-link" href="escola-legal.html">página da Escola Legal</a>.'
     },
     {
+      id: 'cafe',
       chip: 'O que é o Café com a Lei?',
+      desc: 'O que é o evento/encontro Café com a Lei',
       keys: ['cafe com a lei', 'café com a lei', 'cafe', 'café', 'encontro', 'evento', 'palestra'],
       a: 'O <strong>Café com a Lei</strong> são encontros matinais, um sábado por mês, com conversas objetivas sobre temas jurídicos do dia a dia escolar. ☕⚖️<br><br>A edição especial é sobre a <strong>NR1 nas Instituições de Ensino</strong>. Veja na <a class="dsw-link" href="cafe-com-a-lei.html">página do Café com a Lei</a>.'
     },
     {
+      id: 'inscricao',
       chip: 'Como me inscrevo no Café com a Lei?',
+      desc: 'Como se inscrever / participar / garantir vaga no Café com a Lei',
       keys: ['inscrever', 'inscricao', 'inscrição', 'participar', 'vaga', 'me inscrevo', 'como participo'],
       a: 'É só preencher o formulário na <a class="dsw-link" href="cafe-com-a-lei.html#inscricao">página do Café com a Lei</a>. ✍️<br><br>As vagas são prioritárias às escolas do grupo, então vale garantir logo a sua.'
     },
     {
+      id: 'nr1',
       chip: 'O que é a NR1?',
+      desc: 'O que é a NR1, norma regulamentadora, gerenciamento de riscos',
       keys: ['nr1', 'nr 1', 'norma', 'risco', 'riscos'],
       a: 'A <strong>NR1</strong> trouxe novas obrigações para as instituições de ensino, especialmente sobre gerenciamento de riscos e saúde organizacional. 📋<br><br>No <strong>Café com a Lei</strong> a Dra. Deliane explica, na prática, como a sua escola pode se adequar.'
     },
     {
+      id: 'contato',
       chip: 'Falar com a Dra. Deliane',
+      desc: 'Falar com um humano, contato, telefone, WhatsApp, agendar, atendimento, e-mail, horários',
       keys: ['falar', 'contato', 'atendimento', 'telefone', 'whatsapp', 'humano', 'pessoa', 'agendar', 'reuniao', 'reunião', 'horario', 'horário', 'email', 'e-mail'],
       a: 'Claro! O atendimento direto é feito pela nossa equipe. 😊 Toque no botão abaixo que você fala com a gente no WhatsApp.',
       wa: true
@@ -149,7 +161,8 @@
     }
     function hideTyping() { var t = document.getElementById('dswTyping'); if (t) t.remove(); }
 
-    function findAnswer(text) {
+    // 1) Tenta por palavra-chave (local, grátis, instantâneo)
+    function findAnswerLocal(text) {
       var t = normalize(text), best = null, bestScore = 0;
       FAQ.forEach(function (item) {
         var score = 0;
@@ -158,13 +171,35 @@
       });
       return bestScore > 0 ? best : null;
     }
+    function findById(id) {
+      for (var i = 0; i < FAQ.length; i++) { if (FAQ[i].id === id) return FAQ[i]; }
+      return null;
+    }
+    // 2) Só quando a palavra-chave falha: IA (Gemini) apenas ENTENDE e roteia (não inventa)
+    function aiRoute(text) {
+      var topics = FAQ.map(function (f) { return { id: f.id, desc: f.desc }; });
+      return fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, topics: topics })
+      })
+        .then(function (r) { return r.ok ? r.json() : { id: 'none' }; })
+        .then(function (d) { return (d && d.id) ? d.id : 'none'; })
+        .catch(function () { return 'none'; });
+    }
     function respond(text) {
       showTyping();
-      setTimeout(function () {
+      var local = findAnswerLocal(text);
+      if (local) {
+        setTimeout(function () { hideTyping(); addBot(local.a, !!local.wa); }, 600 + Math.random() * 450);
+        return;
+      }
+      aiRoute(text).then(function (id) {
         hideTyping();
-        var m = findAnswer(text);
-        if (m) addBot(m.a, !!m.wa); else addBot(FALLBACK, true);
-      }, 650 + Math.random() * 650);
+        var item = findById(id);
+        if (item) addBot(item.a, !!item.wa);
+        else addBot(FALLBACK, true);
+      });
     }
     function send(text) {
       var c = (text || '').trim(); if (!c) return;
