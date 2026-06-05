@@ -1,0 +1,15 @@
+# Vercel
+.vercel
+
+# Dependências (caso futuramente use Node)
+node_modules
+
+# Arquivos de referência (não fazem parte do site publicado)
+EducaScale*
+*.rar
+referencias.pdf
+ref_p*.png
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
