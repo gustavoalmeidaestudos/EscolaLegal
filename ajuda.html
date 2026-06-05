@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Central de Ajuda — Deliane Santos Advocacia Educacional.">
+  <meta name="theme-color" content="#001D3D">
+  <link rel="icon" type="image/svg+xml" href="Logo/favicon.svg">
+  <title>Ajuda — Deliane Santos Advocacia Educacional</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FAF9F6',
+            gold: { DEFAULT: '#C5943E', light: '#D4AD5E', dark: '#A67A2E' },
+            navy: { DEFAULT: '#001D3D', deep: '#001428', light: '#002952' },
+            gray: { DEFAULT: '#3D4550', light: '#5C6470', muted: '#6B7280' },
+          },
+          fontFamily: {
+            display: ['Playfair Display', 'Georgia', 'serif'],
+            sans: ['Lato', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav-wrap" aria-label="Navegação principal">
+    <div class="flex items-center justify-between h-[60px] px-4 sm:px-5 gap-3">
+      <a href="index.html" class="flex items-center min-w-0 shrink-0">
+        <img src="Logo/Deliane-Logo-Institucional.svg" alt="Deliane Santos — Advocacia Educacional" class="h-9 sm:h-10 w-auto">
+      </a>
+      <div class="flex items-center gap-1 sm:gap-2">
+        <a href="index.html" class="nav-link">Início</a>
+        <a href="assessoria.html" class="nav-link">Assessoria</a>
+        <a href="ajuda.html" class="nav-link is-active">Ajuda</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Conteúdo -->
+  <main class="hero-section" style="min-height:100vh;display:flex;align-items:center;">
+    <div class="relative z-[2] page-shell text-center max-w-xl mx-auto">
+      <div class="project-card__icon mx-auto mb-6" style="width:64px;height:64px;background:rgba(197,148,62,0.16);color:#D4AD5E;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:30px;height:30px;stroke-width:2;"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="eyebrow eyebrow--light">Central de Ajuda</span>
+      <h1 class="font-display text-[clamp(30px,5vw,46px)] font-bold leading-[1.1] text-white mb-4">Em breve</h1>
+      <p class="text-white/80 text-[16px] md:text-[18px] leading-relaxed mb-8">
+        Estamos preparando uma central de ajuda com as principais dúvidas. Enquanto isso, fale diretamente com a nossa equipe.
+      </p>
+      <a href="https://wa.me/5511957542911" target="_blank" rel="noopener" class="btn-gold">Falar no WhatsApp</a>
+      <div class="mt-6">
+        <a href="index.html" class="footer-link text-[14px] font-bold">&larr; Voltar ao início</a>
+      </div>
+    </div>
+  </main>
+
+</body>
+</html>

@@ -1,0 +1,162 @@
+/* ============================================================
+   Deliane Santos — Advocacia Educacional
+   Estilos compartilhados (Início, Assessoria, Café com a Lei, Ajuda)
+   ============================================================ */
+
+html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: 'Lato', sans-serif; line-height: 1.65; overflow-x: hidden;
+  background: #FAF9F6; color: #001D3D; margin: 0;
+}
+
+.page-shell { max-width: 1040px; margin-inline: auto; padding-inline: 1.25rem; }
+@media (min-width: 768px) { .page-shell { padding-inline: 2rem; } }
+
+/* ---------- Navegação ---------- */
+.nav-wrap {
+  position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+  width: calc(100% - 24px); max-width: 1040px; z-index: 100;
+  background: rgba(0, 29, 61, 0.96); backdrop-filter: blur(20px);
+  border: 1px solid rgba(197, 148, 62, 0.35); border-radius: 16px;
+}
+.nav-link {
+  color: rgba(255, 255, 255, 0.85); font-size: 13px; font-weight: 700;
+  padding: 8px 12px; border-radius: 10px; text-decoration: none;
+  letter-spacing: 0.02em; white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+.nav-link:hover { color: #fff; background: rgba(197, 148, 62, 0.18); }
+.nav-link.is-active { color: #001D3D; background: #C5943E; }
+
+/* ---------- Hero ---------- */
+.hero-section {
+  padding: 120px 0 72px; position: relative; overflow: hidden;
+  background: linear-gradient(165deg, #001428 0%, #001D3D 45%, #002952 100%);
+}
+.hero-section::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 80% 60% at 90% 10%, rgba(197,148,62,0.16), transparent 55%),
+              radial-gradient(ellipse 60% 50% at 5% 90%, rgba(197,148,62,0.1), transparent 50%);
+}
+
+/* ---------- Divisor dourado ---------- */
+.gold-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+.gold-divider::before, .gold-divider::after {
+  content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, #C5943E, transparent);
+}
+.gold-divider span { width: 6px; height: 6px; border-radius: 50%; background: #C5943E; flex-shrink: 0; }
+.gold-divider--light::before, .gold-divider--light::after {
+  background: linear-gradient(90deg, transparent, rgba(212,173,94,0.6), transparent);
+}
+
+/* ---------- Etiqueta superior (eyebrow) ---------- */
+.eyebrow {
+  display: inline-block; color: #C5943E; font-size: 12px; font-weight: 900;
+  letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 10px;
+}
+.eyebrow--light { color: #D4AD5E; }
+
+/* ---------- Botões ---------- */
+.btn-gold {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 15px 30px; background: linear-gradient(135deg, #D4AD5E 0%, #C5943E 100%);
+  color: #001D3D; font-family: 'Lato', sans-serif; font-size: 16px; font-weight: 900;
+  border: none; border-radius: 12px; cursor: pointer; text-decoration: none;
+  box-shadow: 0 12px 30px rgba(197,148,62,0.4); transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 18px 42px rgba(197,148,62,0.55); }
+.btn-gold svg { width: 20px; height: 20px; stroke-width: 2.5; }
+
+.btn-outline {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 14px 28px; background: transparent; color: #001D3D;
+  font-family: 'Lato', sans-serif; font-size: 16px; font-weight: 900;
+  border: 1.5px solid rgba(0,29,61,0.25); border-radius: 12px; cursor: pointer; text-decoration: none;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.btn-outline:hover { border-color: #C5943E; background: rgba(197,148,62,0.08); transform: translateY(-2px); }
+.btn-outline svg { width: 20px; height: 20px; stroke-width: 2.5; }
+
+.btn-ghost-light {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 14px 28px; background: transparent; color: #FAF9F6;
+  font-family: 'Lato', sans-serif; font-size: 16px; font-weight: 900;
+  border: 1.5px solid rgba(212,173,94,0.55); border-radius: 12px; cursor: pointer; text-decoration: none;
+  transition: border-color 0.2s, background 0.2s, transform 0.2s;
+}
+.btn-ghost-light:hover { border-color: #D4AD5E; background: rgba(197,148,62,0.14); transform: translateY(-2px); }
+.btn-ghost-light svg { width: 20px; height: 20px; stroke-width: 2.5; }
+
+/* ---------- Cards ---------- */
+.card {
+  background: #fff; border: 1px solid rgba(0,29,61,0.1); border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0,29,61,0.06);
+}
+
+/* Cartão de projeto (Início) */
+.project-card {
+  background: #fff; border: 1px solid rgba(0,29,61,0.08); border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0,29,61,0.07); overflow: hidden;
+  display: flex; flex-direction: column; transition: transform 0.25s, box-shadow 0.25s;
+}
+.project-card:hover { transform: translateY(-4px); box-shadow: 0 28px 64px rgba(0,29,61,0.12); }
+.project-card__icon {
+  width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+  background: rgba(197,148,62,0.14); color: #A67A2E;
+  display: flex; align-items: center; justify-content: center;
+}
+.project-card__icon svg { width: 26px; height: 26px; stroke-width: 2; }
+
+/* ---------- Círculos da Assessoria ---------- */
+.choice-circle {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  text-decoration: none; transition: transform 0.25s;
+}
+.choice-circle:hover { transform: translateY(-6px); }
+.choice-circle__ring {
+  width: clamp(180px, 42vw, 230px); height: clamp(180px, 42vw, 230px); border-radius: 50%;
+  background: linear-gradient(160deg, #002952 0%, #001D3D 60%, #001428 100%);
+  border: 3px solid rgba(197,148,62,0.55);
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  box-shadow: 0 22px 55px rgba(0,29,61,0.22); transition: border-color 0.25s, box-shadow 0.25s;
+}
+.choice-circle:hover .choice-circle__ring {
+  border-color: #C5943E; box-shadow: 0 30px 70px rgba(197,148,62,0.35);
+}
+.choice-circle__ring img { width: 100%; height: 100%; object-fit: cover; }
+.choice-circle__ring img.contain { object-fit: contain; padding: 14px; }
+
+/* ---------- Pílula de info (Café com a Lei) ---------- */
+.info-pill {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: rgba(197,148,62,0.1); border: 1px solid rgba(197,148,62,0.4);
+  color: #A67A2E; border-radius: 100px; padding: 8px 16px;
+  font-size: 14px; font-weight: 800;
+}
+.info-pill svg { width: 18px; height: 18px; stroke-width: 2.25; }
+
+.feature-box {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(212,173,94,0.3);
+  border-radius: 16px; padding: 22px; text-align: center;
+}
+.feature-box__icon {
+  width: 48px; height: 48px; border-radius: 12px; margin: 0 auto 14px;
+  background: rgba(197,148,62,0.16); color: #D4AD5E;
+  display: flex; align-items: center; justify-content: center;
+}
+.feature-box__icon svg { width: 24px; height: 24px; stroke-width: 2; }
+
+/* ---------- Rodapé ---------- */
+.site-footer { background: #001D3D; color: rgba(255,255,255,0.75); }
+.footer-link { color: rgba(255,255,255,0.8); text-decoration: none; transition: color 0.2s; }
+.footer-link:hover { color: #D4AD5E; }
+
+/* ---------- WhatsApp flutuante ---------- */
+.wa-float {
+  position: fixed; right: 18px; bottom: 18px; z-index: 80;
+  width: 56px; height: 56px; border-radius: 50%; background: #25D366;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.28); transition: transform 0.2s;
+}
+.wa-float:hover { transform: scale(1.08); }
+.wa-float svg { width: 30px; height: 30px; }

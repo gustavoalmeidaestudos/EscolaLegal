@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Assessoria jurídica da Dra. Deliane Santos: conheça o programa Escola Legal e os encontros Café com a Lei.">
+  <meta name="theme-color" content="#001D3D">
+  <link rel="icon" type="image/svg+xml" href="Logo/favicon.svg">
+  <title>Assessoria — Deliane Santos Advocacia Educacional</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FAF9F6',
+            gold: { DEFAULT: '#C5943E', light: '#D4AD5E', dark: '#A67A2E' },
+            navy: { DEFAULT: '#001D3D', deep: '#001428', light: '#002952' },
+            gray: { DEFAULT: '#3D4550', light: '#5C6470', muted: '#6B7280' },
+          },
+          fontFamily: {
+            display: ['Playfair Display', 'Georgia', 'serif'],
+            sans: ['Lato', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav-wrap" aria-label="Navegação principal">
+    <div class="flex items-center justify-between h-[60px] px-4 sm:px-5 gap-3">
+      <a href="index.html" class="flex items-center min-w-0 shrink-0">
+        <img src="Logo/Deliane-Logo-Institucional.svg" alt="Deliane Santos — Advocacia Educacional" class="h-9 sm:h-10 w-auto">
+      </a>
+      <div class="flex items-center gap-1 sm:gap-2">
+        <a href="index.html" class="nav-link">Início</a>
+        <a href="assessoria.html" class="nav-link is-active">Assessoria</a>
+        <a href="ajuda.html" class="nav-link">Ajuda</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero-section" style="padding-bottom:48px;">
+    <div class="relative z-[2] page-shell text-center max-w-2xl mx-auto">
+      <span class="eyebrow eyebrow--light">Assessoria Jurídica</span>
+      <h1 class="font-display text-[clamp(30px,5vw,46px)] font-bold leading-[1.1] tracking-[-0.02em] text-white mb-4">
+        Escolha por onde <span class="text-gold-light">começar</span>
+      </h1>
+      <p class="text-white/80 text-[16px] md:text-[18px] leading-relaxed">
+        Selecione abaixo a frente de atuação que faz mais sentido para a sua instituição.
+      </p>
+    </div>
+  </header>
+
+  <!-- Dois círculos -->
+  <section class="page-shell py-16 md:py-24">
+    <div class="flex flex-col md:flex-row items-start justify-center gap-12 md:gap-20 max-w-3xl mx-auto">
+
+      <!-- Escola Legal -->
+      <a href="escola-legal.html" class="choice-circle w-full md:w-auto">
+        <div class="choice-circle__ring">
+          <img src="Logo/Logo-Adv-Colorida.png" alt="Escola Legal" class="contain">
+        </div>
+        <h2 class="font-display text-[24px] font-bold text-navy mt-6 mb-2">Escola Legal</h2>
+        <p class="text-gray-muted text-[15px] leading-relaxed max-w-[260px]">
+          Assessoria jurídica completa e contínua para escolas parceiras. Condição exclusiva de adesão.
+        </p>
+        <span class="inline-flex items-center gap-2 text-gold-dark font-black text-[15px] mt-4">
+          Acessar
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-4 h-4"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </a>
+
+      <!-- Café com a Lei -->
+      <a href="cafe-com-a-lei.html" class="choice-circle w-full md:w-auto">
+        <div class="choice-circle__ring">
+          <img src="Logo/Logo-Cafe-com-a-Lei.png" alt="Café com a Lei">
+        </div>
+        <h2 class="font-display text-[24px] font-bold text-navy mt-6 mb-2">Café com a Lei</h2>
+        <p class="text-gray-muted text-[15px] leading-relaxed max-w-[260px]">
+          Encontros matinais sobre temas jurídicos que afetam o dia a dia escolar. Orientação prática para gestores.
+        </p>
+        <span class="inline-flex items-center gap-2 text-gold-dark font-black text-[15px] mt-4">
+          Participar
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" class="w-4 h-4"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="page-shell py-12 text-center">
+      <img src="Logo/Deliane-Logo-Institucional.svg" alt="Deliane Santos" class="h-11 w-auto mx-auto mb-5">
+      <p class="text-white/65 text-[15px] mb-2">WhatsApp: <a href="https://wa.me/5511957542911" target="_blank" rel="noopener" class="footer-link">(11) 95754-2911</a> · <a href="mailto:contato@delianesantos.com" class="footer-link">contato@delianesantos.com</a></p>
+      <p class="text-gold-light text-[13px] font-bold tracking-wider uppercase">OAB/SP 343.994</p>
+      <div class="gold-divider gold-divider--light max-w-[160px] mx-auto mt-8 mb-4"><span></span></div>
+      <p class="text-white/45 text-[13px]">© 2026 Deliane Santos — Advocacia Educacional.</p>
+    </div>
+  </footer>
+
+</body>
+</html>

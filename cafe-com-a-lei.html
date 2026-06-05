@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Café com a Lei — Edição Especial | NR1 nas Instituições de Ensino. Encontro estratégico com a Dra. Deliane Santos para gestores escolares.">
+  <meta name="theme-color" content="#001D3D">
+  <link rel="icon" type="image/svg+xml" href="Logo/favicon.svg">
+  <title>Café com a Lei — NR1 nas Instituições de Ensino | Deliane Santos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FAF9F6',
+            gold: { DEFAULT: '#C5943E', light: '#D4AD5E', dark: '#A67A2E' },
+            navy: { DEFAULT: '#001D3D', deep: '#001428', light: '#002952' },
+            gray: { DEFAULT: '#3D4550', light: '#5C6470', muted: '#6B7280' },
+          },
+          fontFamily: {
+            display: ['Playfair Display', 'Georgia', 'serif'],
+            sans: ['Lato', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="nav-wrap" aria-label="Navegação principal">
+    <div class="flex items-center justify-between h-[60px] px-4 sm:px-5 gap-3">
+      <a href="index.html" class="flex items-center min-w-0 shrink-0">
+        <img src="Logo/Deliane-Logo-Institucional.svg" alt="Deliane Santos — Advocacia Educacional" class="h-9 sm:h-10 w-auto">
+      </a>
+      <div class="flex items-center gap-1 sm:gap-2">
+        <a href="index.html" class="nav-link">Início</a>
+        <a href="assessoria.html" class="nav-link is-active">Assessoria</a>
+        <a href="ajuda.html" class="nav-link">Ajuda</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero-section">
+    <div class="relative z-[2] page-shell">
+      <div class="grid md:grid-cols-2 gap-10 items-center">
+
+        <div class="text-center md:text-left order-2 md:order-1">
+          <img src="Logo/Logo-Cafe-com-a-Lei.png" alt="Café com a Lei" class="w-[120px] h-[120px] rounded-2xl mb-6 mx-auto md:mx-0 shadow-lg">
+          <span class="eyebrow eyebrow--light">Edição Especial</span>
+          <h1 class="font-display text-[clamp(28px,5vw,44px)] font-bold leading-[1.1] tracking-[-0.02em] text-white mb-4">
+            NR1 nas <span class="text-gold-light">Instituições de Ensino</span>
+          </h1>
+          <p class="text-white/85 text-[16px] md:text-[18px] leading-relaxed mb-7 max-w-md mx-auto md:mx-0">
+            Um encontro estratégico para gestores escolares que valorizam segurança, prevenção e excelência na gestão. Com a <strong class="text-gold-light">Dra. Deliane Santos</strong>.
+          </p>
+
+          <div class="flex flex-wrap gap-3 justify-center md:justify-start mb-8">
+            <span class="info-pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke-linecap="round"/></svg>
+              06 de junho · sábado
+            </span>
+            <span class="info-pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              09h da manhã
+            </span>
+            <span class="info-pill">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4" stroke-linecap="round"/></svg>
+              Online
+            </span>
+          </div>
+
+          <a href="#inscricao" class="btn-gold">
+            Quero participar
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </div>
+
+        <div class="order-1 md:order-2 flex justify-center">
+          <div class="relative">
+            <div class="absolute -inset-3 rounded-[28px] border border-gold/30"></div>
+            <img src="Imagens/5.jpeg" alt="Dra. Deliane Santos — Café com a Lei" class="relative w-[260px] sm:w-[320px] md:w-full max-w-[380px] rounded-[24px] object-cover shadow-2xl">
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Tema -->
+  <section class="page-shell py-16 md:py-20">
+    <div class="text-center max-w-2xl mx-auto">
+      <span class="eyebrow">O tema</span>
+      <h2 class="font-display text-[clamp(24px,4vw,34px)] font-bold text-navy leading-tight mb-4">Gestão preventiva e os impactos da NR1 nas escolas</h2>
+      <p class="text-gray text-[16px] leading-relaxed">
+        A NR1 trouxe novas obrigações para as instituições de ensino, especialmente no que diz respeito ao gerenciamento de riscos e à saúde organizacional. Vamos conversar, de forma prática e objetiva, sobre como a sua escola pode se adequar e transformar a obrigação em uma vantagem de gestão.
+      </p>
+      <div class="gold-divider max-w-[120px] mx-auto"><span></span></div>
+    </div>
+
+    <!-- O que você recebe -->
+    <div class="grid sm:grid-cols-3 gap-6 mt-12">
+      <div class="project-card p-7 text-center">
+        <div class="project-card__icon mx-auto mb-5">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display text-[20px] font-bold text-navy mb-2">Encontro exclusivo</h3>
+        <p class="text-gray-muted text-[15px] leading-relaxed">Direcionado especialmente para gestores escolares.</p>
+      </div>
+      <div class="project-card p-7 text-center">
+        <div class="project-card__icon mx-auto mb-5">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM14 2v6h6M16 13H8M16 17H8M10 9H8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display text-[20px] font-bold text-navy mb-2">Material de apoio</h3>
+        <p class="text-gray-muted text-[15px] leading-relaxed">Conteúdo exclusivo disponibilizado aos participantes.</p>
+      </div>
+      <div class="project-card p-7 text-center">
+        <div class="project-card__icon mx-auto mb-5">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="font-display text-[20px] font-bold text-navy mb-2">Conversa de acolhimento</h3>
+        <p class="text-gray-muted text-[15px] leading-relaxed">Um espaço de diálogo, troca e orientação entre gestores.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA inscrição -->
+  <section id="inscricao" class="footer-wave" style="background:linear-gradient(165deg,#001428,#002952);">
+    <div class="page-shell py-16 md:py-20 text-center max-w-2xl mx-auto">
+      <span class="eyebrow eyebrow--light">Participe</span>
+      <h2 class="font-display text-[clamp(24px,4vw,36px)] font-bold text-white leading-tight mb-4">Garanta a sua vaga</h2>
+      <p class="text-white/80 text-[16px] leading-relaxed mb-3">
+        As vagas são direcionadas prioritariamente às escolas participantes do grupo.
+      </p>
+      <p class="text-gold-light text-[16px] font-bold mb-8">Será um prazer ter você conosco!</p>
+      <a href="https://wa.me/5511957542911?text=Quero%20participar%20do%20Caf%C3%A9%20com%20a%20Lei%20-%20NR1%20nas%20Institui%C3%A7%C3%B5es%20de%20Ensino" target="_blank" rel="noopener" class="btn-gold">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;"><path d="M.057 24l1.687-6.163a11.867 11.867 0 0 1-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 0 1 8.413 3.488 11.824 11.824 0 0 1 3.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 0 1-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 0 0 1.51 5.26l-.999 3.648 3.978-1.515zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+        Quero participar
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="page-shell py-12 text-center">
+      <a href="assessoria.html" class="footer-link text-[14px] font-bold">&larr; Voltar para Assessoria</a>
+      <div class="gold-divider gold-divider--light max-w-[160px] mx-auto mt-6 mb-4"><span></span></div>
+      <p class="text-white/45 text-[13px]">© 2026 Deliane Santos — Advocacia Educacional · OAB/SP 343.994</p>
+    </div>
+  </footer>
+
+</body>
+</html>
