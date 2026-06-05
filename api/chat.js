@@ -35,7 +35,8 @@ export default async function handler(req, res) {
     return;
   }
 
-  const key = process.env.GEMINI_API_KEY;
+  const key = process.env.GEMINI_API_KEY || process.env.Gemini || process.env.GEMINI
+    || process.env.GOOGLE_API_KEY || process.env.GOOGLE_GENAI_API_KEY || process.env.API_KEY;
   if (!key) {
     // Sem chave configurada: devolve "none" (o front cai no fallback WhatsApp).
     res.status(200).json({ id: 'none', reason: 'no_key' });
