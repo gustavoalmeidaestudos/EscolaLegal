@@ -4,7 +4,7 @@
 // A IA NÃO gera conteúdo — apenas roteia para uma resposta pré-escrita.
 // A chave fica no ambiente do Vercel (NUNCA no front): process.env.GEMINI_API_KEY
 
-const MODEL = 'gemini-2.0-flash';
+const MODEL = 'gemini-2.5-flash-lite';
 
 async function readBody(req) {
   if (req.body && typeof req.body === 'object') return req.body;
@@ -26,7 +26,6 @@ export default async function handler(req, res) {
   }
 
   const body = await readBody(req);
-  const model = (body.model && /^[a-z0-9.\-]+$/i.test(body.model)) ? body.model : MODEL;
   const message = (body.message || '').toString().trim().slice(0, 500);
   const topics = Array.isArray(body.topics) ? body.topics.slice(0, 30) : [];
   const validIds = topics.map((t) => String(t.id));
@@ -58,7 +57,7 @@ export default async function handler(req, res) {
     'id:';
 
   try {
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(key);
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + MODEL + ':generateContent?key=' + encodeURIComponent(key);
     const r = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -69,9 +68,7 @@ export default async function handler(req, res) {
     });
 
     if (!r.ok) {
-      let detail = '';
-      try { detail = await r.text(); } catch (e) { detail = ''; }
-      res.status(200).json({ id: 'none', reason: 'api_error_' + r.status, detail: detail.slice(0, 400) });
+      res.status(200).json({ id: 'none', reason: 'api_error_' + r.status });
       return;
     }
 
