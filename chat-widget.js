@@ -63,8 +63,8 @@
     + '.dsw-fab:hover{transform:scale(1.08);}'
     + '.dsw-fab-wa{background:#25D366;}'
     + '.dsw-fab-wa svg{width:30px;height:30px;}'
-    + '.dsw-fab-chat{background:#001D3D;border:2px solid #C5943E;position:relative;overflow:hidden;}'
-    + '.dsw-fab-chat img{width:100%;height:100%;object-fit:cover;border-radius:50%;}'
+    + '.dsw-fab-chat{background:#001D3D;border:2px solid #C5943E;position:relative;color:#D4AD5E;}'
+    + '.dsw-fab-chat svg{width:27px;height:27px;}'
     + '.dsw-fab-badge{position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:50%;background:#25D366;border:2px solid #fff;animation:dsw-blink 1.6s ease-in-out infinite;}'
     + '@keyframes dsw-blink{0%,100%{opacity:1;}50%{opacity:.4;}}'
     + '.dsw-panel{position:fixed;right:18px;bottom:86px;z-index:95;width:360px;max-width:calc(100vw - 36px);height:min(72vh,560px);background:#fff;border:1px solid rgba(0,29,61,0.12);border-radius:20px;box-shadow:0 28px 70px rgba(0,29,61,0.28);overflow:hidden;display:none;flex-direction:column;transform:translateY(14px);opacity:0;transition:transform .25s,opacity .25s;}'
@@ -124,7 +124,7 @@
       + '<button type="submit" class="dsw-sendbtn" aria-label="Enviar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
       + '</form>'
       + '</div>'
-      + '<button class="dsw-fab dsw-fab-chat" id="dswToggle" aria-label="Abrir chat de Suporte"><img src="' + AVATAR + '" alt="Suporte"><span class="dsw-fab-badge"></span></button>'
+      + '<button class="dsw-fab dsw-fab-chat" id="dswToggle" aria-label="Abrir chat de Suporte"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H4a1 1 0 0 1-1-1v-5a9 9 0 0 1 18 0v5a1 1 0 0 1-1 1h-2a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"/><path d="M21 16v2a4 4 0 0 1-4 4h-5"/></svg><span class="dsw-fab-badge"></span></button>'
       + '<a class="dsw-fab dsw-fab-wa" href="' + WA + '" target="_blank" rel="noopener" aria-label="Falar no WhatsApp">' + WA_ICON + '</a>';
     document.body.appendChild(wrap);
 
