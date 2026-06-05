@@ -26,6 +26,7 @@ export default async function handler(req, res) {
   }
 
   const body = await readBody(req);
+  const model = (body.model && /^[a-z0-9.\-]+$/i.test(body.model)) ? body.model : MODEL;
   const message = (body.message || '').toString().trim().slice(0, 500);
   const topics = Array.isArray(body.topics) ? body.topics.slice(0, 30) : [];
   const validIds = topics.map((t) => String(t.id));
@@ -57,7 +58,7 @@ export default async function handler(req, res) {
     'id:';
 
   try {
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + MODEL + ':generateContent?key=' + encodeURIComponent(key);
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + encodeURIComponent(key);
     const r = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
