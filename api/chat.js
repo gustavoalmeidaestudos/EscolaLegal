@@ -68,7 +68,9 @@ export default async function handler(req, res) {
     });
 
     if (!r.ok) {
-      res.status(200).json({ id: 'none', reason: 'api_error_' + r.status });
+      let detail = '';
+      try { detail = await r.text(); } catch (e) { detail = ''; }
+      res.status(200).json({ id: 'none', reason: 'api_error_' + r.status, detail: detail.slice(0, 400) });
       return;
     }
 
