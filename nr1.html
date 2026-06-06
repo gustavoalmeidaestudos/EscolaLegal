@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Acompanhamento jurídico da implementação da NR1 para instituições de ensino — Dra. Deliane Santos">
+  <meta name="theme-color" content="#001D3D">
+  <link rel="icon" type="image/svg+xml" href="Logo/favicon.svg">
+  <title>Acompanhamento Jurídico NR1 — Dra. Deliane Santos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FAF9F6',
+            gold: { DEFAULT: '#C5943E', light: '#D4AD5E', dark: '#A67A2E' },
+            navy: { DEFAULT: '#001D3D', deep: '#001428', light: '#002952' },
+            gray: { DEFAULT: '#3D4550', light: '#5C6470', muted: '#6B7280' },
+          },
+          fontFamily: {
+            display: ['Playfair Display', 'Georgia', 'serif'],
+            sans: ['Lato', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body { font-family: 'Lato', sans-serif; line-height: 1.65; overflow-x: hidden; background: #FAF9F6; color: #001D3D; }
+    .page-shell { max-width: 960px; margin-inline: auto; padding-inline: 1.25rem; }
+    @media (min-width: 768px) { .page-shell { padding-inline: 2rem; } }
+    .nav-wrap {
+      position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+      width: calc(100% - 24px); max-width: 960px; z-index: 100;
+      background: rgba(0, 29, 61, 0.96); backdrop-filter: blur(20px);
+      border: 1px solid rgba(197, 148, 62, 0.35); border-radius: 16px;
+    }
+    .hero-section {
+      padding: 112px 0 64px; position: relative; overflow: hidden;
+      background: linear-gradient(165deg, #001428 0%, #001D3D 45%, #002952 100%);
+    }
+    .hero-section::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 80% 60% at 90% 10%, rgba(197,148,62,0.14), transparent 55%);
+    }
+    .gold-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+    .gold-divider::before, .gold-divider::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, #C5943E, transparent); }
+    .gold-divider span { width: 6px; height: 6px; border-radius: 50%; background: #C5943E; }
+    .price-card { background: #fff; border: 2px solid #C5943E; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,29,61,0.08); }
+    .form-card { background: #fff; border: 1px solid rgba(0,29,61,0.1); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,29,61,0.06); }
+    .field-input {
+      width: 100%; padding: 13px 15px; border: 1.5px solid rgba(0,29,61,0.18);
+      border-radius: 12px; font-size: 15px; font-weight: 500; color: #001D3D; background: #fff;
+    }
+    .field-input:focus { outline: none; border-color: #C5943E; box-shadow: 0 0 0 3px rgba(197,148,62,0.2); }
+    .checkbox-card {
+      display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px;
+      border: 1.5px solid rgba(197,148,62,0.45); border-radius: 12px; background: rgba(197,148,62,0.06); cursor: pointer;
+    }
+    .checkbox-card input { width: 20px; height: 20px; margin-top: 2px; accent-color: #C5943E; flex-shrink: 0; }
+    .btn-primary {
+      width: 100%; padding: 16px 24px; background: #001D3D; color: #FAF9F6;
+      font-size: 16px; font-weight: 900; border: none; border-radius: 12px; cursor: pointer;
+    }
+    .btn-gold {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 15px 30px; background: linear-gradient(135deg, #D4AD5E 0%, #C5943E 100%);
+      color: #001D3D; font-size: 16px; font-weight: 900; border-radius: 12px; text-decoration: none;
+      box-shadow: 0 12px 30px rgba(197,148,62,0.4);
+    }
+    .pix-card { background: #fff; border: 2px solid #C5943E; border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,29,61,0.12); }
+    .pix-qr { width: 240px; height: 240px; object-fit: contain; border-radius: 16px; background: #fff; }
+    .btn-copy {
+      width: 100%; padding: 16px 24px; background: #C5943E; color: #001D3D;
+      font-size: 16px; font-weight: 900; border: none; border-radius: 12px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .bullet-card {
+      background: #fff; border: 1px solid rgba(0,29,61,0.08); border-radius: 16px;
+      padding: 18px 20px; box-shadow: 0 8px 24px rgba(0,29,61,0.04);
+    }
+    .toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(120%);
+      z-index: 200; background: #001D3D; color: #FAF9F6; padding: 14px 20px; border-radius: 12px;
+      font-size: 15px; font-weight: 600; transition: transform 0.4s;
+    }
+    .toast.is-visible { transform: translateX(-50%) translateY(0); }
+    .wave-bottom { position: absolute; bottom: -1px; left: 0; right: 0; height: 60px; pointer-events: none; }
+    .footer-wave { background: #001D3D; }
+    @media (min-width: 768px) { .content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; } }
+  </style>
+</head>
+<body>
+
+  <nav class="nav-wrap" aria-label="Navegação">
+    <div class="flex items-center justify-between h-[60px] px-4 sm:px-5">
+      <a href="https://delianesantos.com" class="flex items-center">
+        <img src="Logo/Deliane-Logo-Institucional.svg" alt="Deliane Santos" class="h-9 sm:h-10">
+      </a>
+      <a href="ajuda.html" class="text-white/85 text-[13px] font-bold px-3 py-2 rounded-lg hover:bg-white/10 no-underline">Ajuda</a>
+    </div>
+  </nav>
+
+  <div id="landing-view">
+    <header class="hero-section">
+      <div class="relative z-[2] page-shell">
+        <div class="grid md:grid-cols-2 gap-8 items-center">
+          <div class="text-center md:text-left order-2 md:order-1">
+            <p class="text-gold-light text-[12px] font-black tracking-[0.18em] uppercase mb-3">Café com a Lei · Oferta especial</p>
+            <h1 class="font-display text-[clamp(28px,5vw,42px)] font-bold leading-[1.1] text-white mb-3">
+              Acompanhamento Jurídico da <span class="text-gold-light">NR1</span>
+            </h1>
+            <div class="gold-divider max-w-[260px] mx-auto md:mx-0"><span></span></div>
+            <p class="text-white text-[16px] leading-[1.75] font-medium mt-4">
+              Para escolas que precisam de <strong class="text-gold-light font-black">segurança jurídica</strong> durante o processo de adequação à NR1 — com orientação, organização documental e produção de evidências institucionais.
+            </p>
+            <div class="mt-7">
+              <a href="#formulario-section" class="btn-gold">Quero contratar o acompanhamento</a>
+            </div>
+          </div>
+          <div class="order-1 md:order-2 flex justify-center">
+            <img src="Logo/Logo-Cafe-com-a-Lei.png" alt="Café com a Lei" class="w-48 sm:w-56 md:max-w-[280px] drop-shadow-[0_24px_50px_rgba(0,0,0,0.45)]">
+          </div>
+        </div>
+      </div>
+      <svg class="wave-bottom" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M0,60 Q720,0 1440,40 L1440,60 L0,60 Z" fill="#FAF9F6"/>
+      </svg>
+    </header>
+
+    <main class="page-shell pb-28 space-y-8 pt-8">
+
+      <section class="space-y-4" aria-label="O que está incluso">
+        <div class="bullet-card">
+          <p class="text-navy text-[15px] leading-relaxed m-0">
+            Acompanho a escola durante o processo de adequação, ajudo a gestão a entender o que precisa ser feito e organizo a documentação e as evidências necessárias para que a instituição tenha mais segurança.
+          </p>
+        </div>
+        <div class="bullet-card">
+          <p class="text-navy text-[15px] leading-relaxed m-0">
+            A maioria das escolas acredita que contratar uma empresa de SST resolve o problema. Na prática, a adequação exige <strong class="font-black">integração entre os documentos técnicos, a gestão escolar e a produção de evidências institucionais</strong>.
+          </p>
+        </div>
+        <div class="bg-navy rounded-2xl px-6 py-5 text-center">
+          <p class="text-white text-[14px] leading-relaxed m-0">
+            <strong class="text-gold-light">Importante:</strong> este serviço é o <strong>acompanhamento jurídico</strong>. A implementação técnica da NR1 pode ser feita por empresa especializada em SST — posso orientar e indicar parceiros quando necessário.
+          </p>
+        </div>
+      </section>
+
+      <div class="content-grid">
+        <section class="price-card" aria-label="Investimento">
+          <div class="bg-navy px-5 py-3.5 text-center">
+            <p class="text-gold-light text-[11px] font-black tracking-[0.14em] uppercase">Investimento · Oferta da live</p>
+          </div>
+          <div class="px-6 py-7 text-center">
+            <p class="text-gray font-semibold text-sm mb-1">Acompanhamento jurídico NR1</p>
+            <p class="font-display text-[clamp(34px,5vw,44px)] font-bold text-navy leading-none" id="valor-display">R$ 1.734,00</p>
+            <p class="text-gray text-sm font-bold mt-2" id="valor-sub">pagamento único via PIX</p>
+          </div>
+        </section>
+
+        <section class="hidden md:block bullet-card">
+          <p class="text-[11px] font-black tracking-[0.12em] uppercase text-gold mb-3">Como funciona</p>
+          <ol class="space-y-4 m-0 p-0 list-none">
+            <li class="flex gap-3"><span class="w-7 h-7 rounded-full bg-gold/15 text-gold-dark flex items-center justify-center shrink-0 font-black text-sm">1</span><p class="text-[15px] m-0">Preencha os dados da escola.</p></li>
+            <li class="flex gap-3"><span class="w-7 h-7 rounded-full bg-gold/15 text-gold-dark flex items-center justify-center shrink-0 font-black text-sm">2</span><p class="text-[15px] m-0">Pague via PIX na tela seguinte.</p></li>
+            <li class="flex gap-3"><span class="w-7 h-7 rounded-full bg-gold/15 text-gold-dark flex items-center justify-center shrink-0 font-black text-sm">3</span><p class="text-[15px] m-0">Receba confirmação por e-mail e início do acompanhamento.</p></li>
+          </ol>
+        </section>
+      </div>
+
+      <section class="form-card p-5 sm:p-7 md:p-8" id="formulario-section">
+        <h2 class="font-display text-[clamp(20px,3vw,24px)] font-bold text-navy mb-2">Dados da instituição</h2>
+        <p class="text-gray text-[15px] mb-6">Preencha abaixo para garantir o acompanhamento jurídico da NR1.</p>
+
+        <form id="formulario" class="space-y-5" novalidate>
+          <div>
+            <label for="nomeInstituicao" class="block text-[15px] font-black text-navy mb-2">Nome da Instituição</label>
+            <input type="text" id="nomeInstituicao" required placeholder="Ex.: Colégio São Francisco" class="field-input">
+          </div>
+          <div>
+            <label for="cnpj" class="block text-[15px] font-black text-navy mb-2">CNPJ</label>
+            <input type="text" id="cnpj" required inputmode="numeric" placeholder="00.000.000/0000-00" maxlength="18" class="field-input">
+          </div>
+          <div>
+            <label for="responsavel" class="block text-[15px] font-black text-navy mb-2">Nome do Responsável</label>
+            <input type="text" id="responsavel" required placeholder="Ex.: Maria Oliveira" class="field-input">
+          </div>
+          <div>
+            <label for="email" class="block text-[15px] font-black text-navy mb-2">E-mail</label>
+            <input type="email" id="email" required placeholder="nome@instituicao.com" class="field-input">
+          </div>
+          <div>
+            <label for="whatsapp" class="block text-[15px] font-black text-navy mb-2">WhatsApp</label>
+            <input type="tel" id="whatsapp" required inputmode="numeric" placeholder="(11) 90000-0000" maxlength="15" class="field-input">
+          </div>
+          <div>
+            <label for="cidade" class="block text-[15px] font-black text-navy mb-2">Cidade / UF</label>
+            <input type="text" id="cidade" required placeholder="Ex.: São Paulo — SP" class="field-input">
+          </div>
+          <label class="checkbox-card" for="aceite">
+            <input type="checkbox" id="aceite" required>
+            <span class="text-[14px] text-navy leading-snug font-medium">
+              Declaro que tenho interesse no <strong class="font-black">acompanhamento jurídico da NR1</strong> e desejo prosseguir para o pagamento nas condições apresentadas.
+            </span>
+          </label>
+          <button type="submit" class="btn-primary">Confirmar e ir para o pagamento</button>
+        </form>
+      </section>
+
+      <footer class="footer-wave rounded-t-3xl px-6 py-8 text-center">
+        <p class="font-display text-white text-[17px] font-bold mb-1">Dra. Deliane Santos</p>
+        <p class="text-gold-light text-[12px] font-black tracking-wider uppercase mb-4">Advocacia Educacional · OAB/SP 343.994</p>
+        <a href="https://delianesantos.com" class="text-gold-light font-bold no-underline">delianesantos.com</a>
+      </footer>
+    </main>
+  </div>
+
+  <section id="checkout-view" class="hidden min-h-screen pt-24 pb-16">
+    <div class="page-shell">
+      <div class="max-w-xl mx-auto mb-6 flex items-start gap-3 bg-white border border-gold/40 rounded-2xl p-4 shadow-sm">
+        <div>
+          <p class="font-black text-navy text-[15px] m-0">Solicitação registrada!</p>
+          <p class="text-gray text-[14px] m-0 mt-1" id="email-confirm-text">Enviamos a confirmação para o seu e-mail.</p>
+        </div>
+      </div>
+
+      <div class="pix-card max-w-xl mx-auto">
+        <div class="bg-navy px-6 py-4 text-center">
+          <p class="text-gold-light text-[11px] font-black tracking-[0.14em] uppercase">Pagamento</p>
+          <h2 class="font-display text-white text-[clamp(22px,4vw,28px)] font-bold mt-1">Pague com PIX para concluir</h2>
+        </div>
+        <div class="px-6 py-7 text-center">
+          <p class="text-gray text-sm font-semibold">Valor</p>
+          <p class="font-display text-[clamp(32px,6vw,42px)] font-bold text-navy leading-none mt-1" id="checkout-valor">R$ 1.734,00</p>
+
+          <div class="flex justify-center my-6">
+            <img src="QR-CODE/qrcodedoutora.png" alt="QR Code PIX" class="pix-qr">
+          </div>
+
+          <p class="text-gray text-[14px] max-w-xs mx-auto mb-4">
+            Escaneie o QR Code no app do banco ou use o <strong class="text-navy font-black">Copia e Cola</strong>:
+          </p>
+
+          <button type="button" id="btn-copy-pix" class="btn-copy">
+            <span id="btn-copy-pix-label">Copiar código Copia e Cola</span>
+          </button>
+
+          <p class="text-gray-muted text-[13px] mt-6 m-0">Após a confirmação do pagamento, nossa equipe entrará em contato para iniciar o acompanhamento.</p>
+        </div>
+      </div>
+
+      <div class="max-w-xl mx-auto mt-5 text-center">
+        <button type="button" id="btn-voltar" class="text-gray font-bold text-[14px] bg-transparent border-0 cursor-pointer">← Voltar e revisar os dados</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script>
+    /* ===================== CONFIGURAÇÃO (edite aqui) ===================== */
+    const CONFIG = {
+      valor: 'R$ 1.734,00',
+      valorSub: 'pagamento único via PIX',
+      pixCopiaCola: '00020126580014BR.GOV.BCB.PIX013638a11bd7-1693-45d2-aeea-eb4281a5fd2a52040000530398654071734.005802BR5925DELIANE SANTOS SOCIEDADE 6009SAO PAULO61080540900062240520Z374cHzG9Uqp6onbahhx6304194D',
+      produto: 'Acompanhamento Jurídico NR1',
+      email: {
+        publicKey: '7ACO5UFTDaROpCb0h',
+        serviceId: 'service_uufuvf7',
+        templateId: 'template_1bijs0w',
+      }
+    };
+    /* ==================================================================== */
+
+    document.getElementById('valor-display').textContent = CONFIG.valor;
+    document.getElementById('valor-sub').textContent = CONFIG.valorSub;
+    document.getElementById('checkout-valor').textContent = CONFIG.valor;
+
+    if (CONFIG.email.publicKey && window.emailjs) emailjs.init({ publicKey: CONFIG.email.publicKey });
+
+    const form = document.getElementById('formulario');
+    const cnpjInput = document.getElementById('cnpj');
+    const whatsappInput = document.getElementById('whatsapp');
+    const landingView = document.getElementById('landing-view');
+    const checkoutView = document.getElementById('checkout-view');
+    const emailConfirmText = document.getElementById('email-confirm-text');
+    const toast = document.getElementById('toast');
+
+    cnpjInput.addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '').slice(0, 14);
+      if (v.length > 12) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/, '$1.$2.$3/$4-$5');
+      else if (v.length > 8) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{0,4}).*/, '$1.$2.$3/$4');
+      else if (v.length > 5) v = v.replace(/^(\d{2})(\d{3})(\d{0,3}).*/, '$1.$2.$3');
+      else if (v.length > 2) v = v.replace(/^(\d{2})(\d{0,3}).*/, '$1.$2');
+      this.value = v;
+    });
+
+    whatsappInput.addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
+      else if (v.length > 6) v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+      else if (v.length > 2) v = v.replace(/^(\d{2})(\d{0,5}).*/, '($1) $2');
+      else if (v.length > 0) v = v.replace(/^(\d{0,2}).*/, '($1');
+      this.value = v;
+    });
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true; btn.textContent = 'Processando…';
+
+      const data = {
+        nomeInstituicao: form.nomeInstituicao.value.trim(),
+        cnpj: form.cnpj.value.trim(),
+        responsavel: form.responsavel.value.trim(),
+        email: form.email.value.trim(),
+        whatsapp: form.whatsapp.value.trim(),
+        cidade: form.cidade.value.trim(),
+      };
+
+      const sent = await sendEmail(data);
+      emailConfirmText.textContent = sent
+        ? `Enviamos a confirmação para ${data.email}.`
+        : `Anote seu e-mail (${data.email}) — a confirmação será enviada em seguida.`;
+
+      landingView.classList.add('hidden');
+      checkoutView.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      btn.disabled = false; btn.textContent = 'Confirmar e ir para o pagamento';
+    });
+
+    async function sendEmail(data) {
+      const c = CONFIG.email;
+      if (!(c.publicKey && c.serviceId && c.templateId && window.emailjs)) return false;
+      try {
+        await emailjs.send(c.serviceId, c.templateId, {
+          to_email: data.email,
+          nome_responsavel: data.responsavel,
+          nome_instituicao: data.nomeInstituicao,
+          cnpj: data.cnpj,
+          whatsapp: data.whatsapp,
+          endereco: data.cidade,
+          valor: CONFIG.valor,
+          produto: CONFIG.produto,
+        });
+        return true;
+      } catch (e) { console.error(e); return false; }
+    }
+
+    document.getElementById('btn-voltar').addEventListener('click', function () {
+      checkoutView.classList.add('hidden');
+      landingView.classList.remove('hidden');
+      document.getElementById('formulario-section').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    document.getElementById('btn-copy-pix').addEventListener('click', async function () {
+      const code = CONFIG.pixCopiaCola;
+      try { await navigator.clipboard.writeText(code); }
+      catch (e) {
+        const t = document.createElement('textarea'); t.value = code;
+        document.body.appendChild(t); t.select(); document.execCommand('copy'); document.body.removeChild(t);
+      }
+      document.getElementById('btn-copy-pix-label').textContent = 'Código copiado!';
+      toast.textContent = 'Código PIX copiado! Cole no app do banco.';
+      toast.classList.add('is-visible');
+      setTimeout(() => { toast.classList.remove('is-visible'); document.getElementById('btn-copy-pix-label').textContent = 'Copiar código Copia e Cola'; }, 3000);
+    });
+  </script>
+</body>
+</html>
