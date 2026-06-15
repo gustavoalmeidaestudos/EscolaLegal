@@ -4,6 +4,7 @@
 // Vercel — variáveis de ambiente:
 //   RESEND_API_KEY ou RESEND_API = re_... (painel Resend → API Keys)
 //   RESEND_FROM      = onboarding@resend.dev  (teste) ou Escola Legal <contrato@delianesantos.com> (após verificar domínio)
+//   EMAIL_CC             = contato@delianesantos.com (cópia em BCC no e-mail Resend)
 //   EMAILJS_PRIVATE_KEY  = chave privada (EmailJS → Account → Security → non-browser API)
 //
 // Teste com onboarding@resend.dev: só entrega no e-mail da conta Resend até verificar delianesantos.com em Domains.
@@ -302,8 +303,8 @@ function buildContratoEmailHtml({
 
 async function sendEmailJsConfirmation(mailData, pdfEmailSent) {
   const userId = process.env.EMAILJS_PUBLIC_KEY || process.env.EMAILJS_USER_ID || 'aBHcQ2aT5S4Q4xK8k';
-  const serviceId = process.env.EMAILJS_SERVICE_ID || 'service_r1lxjn9';
-  const templateId = process.env.EMAILJS_TEMPLATE_ID || 'template_z2j4a5l';
+  const serviceId = process.env.EMAILJS_SERVICE_ID || 'service_uq4609j';
+  const templateId = process.env.EMAILJS_TEMPLATE_ID || 'template_yrb9gmn';
   const privateKey = process.env.EMAILJS_PRIVATE_KEY;
 
   const payload = {
