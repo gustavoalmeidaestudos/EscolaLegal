@@ -735,7 +735,7 @@
       sigCanvas.style.height = h + 'px';
       sigCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
       sigCtx.strokeStyle = '#001D3D';
-      sigCtx.lineWidth = 2.5;
+      sigCtx.lineWidth = 3.5;
       sigCtx.lineCap = 'round';
       sigCtx.lineJoin = 'round';
     }
@@ -799,7 +799,7 @@
           showToast('Desenhe sua assinatura ou use a aba Digitar nome.');
           return;
         }
-        assinatura = sigCanvas.toDataURL('image/png');
+        assinatura = trimSignatureCanvas(sigCanvas);
       } else {
         const nome = sigText.value.trim();
         if (!nome) {
@@ -834,18 +834,58 @@
       }
     });
 
+    function trimSignatureCanvas(source) {
+      const ctx = source.getContext('2d');
+      const { width, height } = source;
+      const data = ctx.getImageData(0, 0, width, height).data;
+      let minX = width;
+      let minY = height;
+      let maxX = 0;
+      let maxY = 0;
+
+      for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+          const i = (y * width + x) * 4;
+          const a = data[i + 3];
+          if (a > 20) {
+            if (x < minX) minX = x;
+            if (y < minY) minY = y;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+
+      if (maxX <= minX || maxY <= minY) return source.toDataURL('image/png');
+
+      const pad = Math.round(Math.max(width, height) * 0.04);
+      minX = Math.max(0, minX - pad);
+      minY = Math.max(0, minY - pad);
+      maxX = Math.min(width - 1, maxX + pad);
+      maxY = Math.min(height - 1, maxY + pad);
+
+      const cropW = maxX - minX + 1;
+      const cropH = maxY - minY + 1;
+      const out = document.createElement('canvas');
+      out.width = cropW;
+      out.height = cropH;
+      const outCtx = out.getContext('2d');
+      outCtx.drawImage(source, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+      return out.toDataURL('image/png');
+    }
+
     function renderTextSignature(name) {
       const c = document.createElement('canvas');
-      c.width = 600;
-      c.height = 120;
+      c.width = 900;
+      c.height = 180;
       const ctx = c.getContext('2d');
       ctx.fillStyle = '#fff';
       ctx.fillRect(0, 0, c.width, c.height);
       ctx.fillStyle = '#001D3D';
-      ctx.font = 'italic 42px Georgia, serif';
+      ctx.font = 'italic 64px Georgia, "Times New Roman", serif';
       ctx.textBaseline = 'middle';
-      ctx.fillText(name, 24, c.height / 2);
-      return c.toDataURL('image/png');
+      ctx.fillText(name, 20, c.height / 2);
+      return trimSignatureCanvas(c);
     }
 
     async function generateContract(data) {

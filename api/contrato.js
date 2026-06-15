@@ -10,21 +10,23 @@
 
 import fs from 'fs';
 import path from 'path';
+import fontkit from '@pdf-lib/fontkit';
 import { PDFDocument, rgb } from 'pdf-lib';
 import { Resend } from 'resend';
 
 const BASE_PDF = path.join(process.cwd(), 'Contrato', 'contrato-escola-legal-base.pdf');
-const ASSINATURA_DOUTORA = path.join(process.cwd(), 'Contrato', 'Assinatura Doutora.jpeg');
+const FONT_ASSINATURA_DRA = path.join(process.cwd(), 'Contrato', 'fonts', 'Allura-Regular.ttf');
+const ASSINATURA_DRA_TEXTO = 'Deliane J Santos';
 const PAGE_H = 842.52;
 
 // Coordenadas calibradas no PDF base (PyMuPDF — origem no canto superior esquerdo).
 const CAMPOS_P0 = [
-  { x: 132, yTop: 201, w: 145, h: 12, key: 'instituicao', size: 9 },
-  { x: 105, yTop: 219, w: 172, h: 12, key: 'cnpj', size: 9 },
-  { x: 118, yTop: 237, w: 158, h: 12, key: 'endereco1', size: 9 },
-  { x: 60, yTop: 255, w: 216, h: 12, key: 'endereco2', size: 9 },
-  { x: 148, yTop: 273, w: 128, h: 12, key: 'representante', size: 9 },
-  { x: 95, yTop: 291, w: 180, h: 12, key: 'cpf', size: 9 },
+  { x: 132, yTop: 201, w: 145, h: 14, key: 'instituicao', size: 10 },
+  { x: 105, yTop: 219, w: 172, h: 14, key: 'cnpj', size: 10 },
+  { x: 118, yTop: 237, w: 158, h: 14, key: 'endereco1', size: 10 },
+  { x: 60, yTop: 255, w: 216, h: 14, key: 'endereco2', size: 10 },
+  { x: 148, yTop: 273, w: 128, h: 14, key: 'representante', size: 10 },
+  { x: 95, yTop: 291, w: 180, h: 14, key: 'cpf', size: 10 },
 ];
 
 const ASSINATURA_CAIXAS = [
@@ -76,6 +78,59 @@ function yPdf(yTop, height = 0) {
   return PAGE_H - yTop - height;
 }
 
+function fitImageInBox(img, caixa, fill = 0.96) {
+  const scale = Math.min(caixa.w / img.width, caixa.h / img.height) * fill;
+  return {
+    w: img.width * scale,
+    h: img.height * scale,
+  };
+}
+
+function fitTextSize(font, text, maxW, maxH, startSize = 32) {
+  let size = startSize;
+  while (size > 10) {
+    const w = font.widthOfTextAtSize(text, size);
+    const h = font.heightAtSize(size);
+    if (w <= maxW && h <= maxH) return { size, w, h };
+    size -= 0.5;
+  }
+  const sizeFinal = 10;
+  return {
+    size: sizeFinal,
+    w: font.widthOfTextAtSize(text, sizeFinal),
+    h: font.heightAtSize(sizeFinal),
+  };
+}
+
+function drawDraSignatureText(page, caixa, font, color) {
+  const padX = caixa.w * 0.03;
+  const padY = caixa.h * 0.08;
+  const { size, w, h } = fitTextSize(
+    font,
+    ASSINATURA_DRA_TEXTO,
+    caixa.w - padX * 2,
+    caixa.h - padY * 2,
+    caixa.h > 28 ? 34 : 30,
+  );
+  page.drawText(ASSINATURA_DRA_TEXTO, {
+    x: caixa.x + (caixa.w - w) / 2,
+    y: yPdf(caixa.yTop, caixa.h) + (caixa.h - h) / 2 + padY * 0.35,
+    size,
+    font,
+    color,
+  });
+}
+
+function drawClienteSignatureImage(page, caixa, img) {
+  const { w, h } = fitImageInBox(img, caixa, 0.96);
+  page.drawImage(img, {
+    x: caixa.x + (caixa.w - w) / 2,
+    y: yPdf(caixa.yTop, caixa.h) + (caixa.h - h) / 2,
+    width: w,
+    height: h,
+  });
+}
+
 function parseSignature(dataUrl) {
   if (!dataUrl || typeof dataUrl !== 'string') return null;
   const m = dataUrl.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/i);
@@ -87,6 +142,7 @@ async function buildPdf(body, clienteSigBuffer) {
   if (!fs.existsSync(BASE_PDF)) throw new Error('base_pdf_missing');
 
   const pdfDoc = await PDFDocument.load(fs.readFileSync(BASE_PDF));
+  pdfDoc.registerFontkit(fontkit);
   // Remove página 3 em branco do modelo Word.
   if (pdfDoc.getPageCount() > 2) {
     pdfDoc.removePage(2);
@@ -140,25 +196,20 @@ async function buildPdf(body, clienteSigBuffer) {
   });
   pData.drawText(`São Paulo, ${dataAssinatura}.`, {
     x: DATA_ASSINATURA.x,
-    y: yPdf(DATA_ASSINATURA.yTop, 10),
-    size: 10,
+    y: yPdf(DATA_ASSINATURA.yTop, 11),
+    size: 11,
     color: navy,
   });
 
-  let draImg;
-  if (fs.existsSync(ASSINATURA_DOUTORA)) {
-    const ext = ASSINATURA_DOUTORA.toLowerCase().endsWith('.png') ? 'png' : 'jpg';
-    draImg = ext === 'png'
-      ? await pdfDoc.embedPng(fs.readFileSync(ASSINATURA_DOUTORA))
-      : await pdfDoc.embedJpg(fs.readFileSync(ASSINATURA_DOUTORA));
+  let draFont;
+  if (fs.existsSync(FONT_ASSINATURA_DRA)) {
+    draFont = await pdfDoc.embedFont(fs.readFileSync(FONT_ASSINATURA_DRA));
   }
 
   const clienteImg = await pdfDoc.embedPng(clienteSigBuffer);
 
   for (const caixa of ASSINATURA_CAIXAS) {
     const page = pages[caixa.page];
-    const img = caixa.who === 'doutora' ? draImg : clienteImg;
-    if (!img) continue;
 
     page.drawRectangle({
       x: caixa.x,
@@ -169,16 +220,11 @@ async function buildPdf(body, clienteSigBuffer) {
       borderWidth: 0,
     });
 
-    const scale = Math.min(caixa.w / img.width, caixa.h / img.height) * 0.88;
-    const w = img.width * scale;
-    const h = img.height * scale;
-
-    page.drawImage(img, {
-      x: caixa.x + (caixa.w - w) / 2,
-      y: yPdf(caixa.yTop, caixa.h) + (caixa.h - h) / 2,
-      width: w,
-      height: h,
-    });
+    if (caixa.who === 'doutora' && draFont) {
+      drawDraSignatureText(page, caixa, draFont, navy);
+    } else if (caixa.who === 'cliente') {
+      drawClienteSignatureImage(page, caixa, clienteImg);
+    }
   }
 
   return pdfDoc.save();
