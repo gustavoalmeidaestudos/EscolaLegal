@@ -1,0 +1,11 @@
+{
+  "name": "escola-legal",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "docxtemplater": "^3.55.0",
+    "docxtemplater-image-module-free": "^1.1.1",
+    "nodemailer": "^6.10.0",
+    "pizzip": "^3.1.7"
+  }
+}

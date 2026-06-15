@@ -210,6 +210,42 @@
     }
     .toast.is-visible { transform: translateX(-50%) translateY(0); }
 
+    .sig-modal {
+      position: fixed; inset: 0; z-index: 300; background: rgba(0,20,40,0.92);
+      display: none; flex-direction: column; padding: 12px;
+    }
+    .sig-modal.is-open { display: flex; }
+    .sig-modal__bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 8px 4px 12px; color: #fff; flex-shrink: 0;
+    }
+    .sig-modal__title { font-weight: 900; font-size: 15px; }
+    .sig-modal__actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .sig-btn {
+      padding: 10px 14px; border-radius: 10px; font-weight: 800; font-size: 13px;
+      border: none; cursor: pointer;
+    }
+    .sig-btn--ghost { background: rgba(255,255,255,0.12); color: #fff; }
+    .sig-btn--gold { background: #C5943E; color: #001D3D; }
+    .sig-modal__tabs { display: flex; gap: 8px; margin-bottom: 10px; flex-shrink: 0; }
+    .sig-tab {
+      flex: 1; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);
+      background: transparent; color: rgba(255,255,255,0.7); font-weight: 800; cursor: pointer;
+    }
+    .sig-tab.is-active { background: #C5943E; color: #001D3D; border-color: #C5943E; }
+    .sig-panel { display: none; flex: 1; min-height: 0; flex-direction: column; }
+    .sig-panel.is-active { display: flex; }
+    .sig-canvas-wrap {
+      flex: 1; min-height: 200px; background: #fff; border-radius: 16px; overflow: hidden;
+      touch-action: none; position: relative;
+    }
+    #sig-canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
+    .sig-text-input {
+      width: 100%; padding: 20px; font-size: 28px; font-family: 'Playfair Display', Georgia, serif;
+      border: 2px solid rgba(197,148,62,0.5); border-radius: 16px; background: #fff; color: #001D3D;
+    }
+    .sig-hint { color: rgba(255,255,255,0.75); font-size: 13px; margin-top: 8px; text-align: center; }
+
     .footer-wave { background: #001D3D; position: relative; overflow: hidden; }
 
     .wave-bottom {
@@ -331,11 +367,11 @@
           </li>
           <li class="flex gap-3 items-start">
             <span class="w-7 h-7 rounded-full bg-gold/15 text-gold-dark flex items-center justify-center shrink-0 font-black text-sm">2</span>
-            <p class="text-[15px] text-navy font-medium leading-snug m-0">Assine o contrato eletronicamente na ZapSign.</p>
+            <p class="text-[15px] text-navy font-medium leading-snug m-0">Assine o contrato na tela (dedo ou caneta).</p>
           </li>
           <li class="flex gap-3 items-start">
             <span class="w-7 h-7 rounded-full bg-gold/15 text-gold-dark flex items-center justify-center shrink-0 font-black text-sm">3</span>
-            <p class="text-[15px] text-navy font-medium leading-snug m-0">Volte aqui e pague a primeira parcela via PIX.</p>
+            <p class="text-[15px] text-navy font-medium leading-snug m-0">Receba o contrato por e-mail e pague via PIX.</p>
           </li>
         </ol>
       </section>
@@ -357,7 +393,7 @@
           Dados da Instituição
         </h2>
         <p class="text-gray text-[15px] leading-relaxed font-medium">
-          Preencha os campos abaixo. Em seguida você será direcionado para assinar o contrato e, após a assinatura, para o pagamento via PIX.
+          Preencha os dados abaixo. Em seguida você assina o contrato na tela, recebe uma cópia por e-mail e vai para o pagamento via PIX.
         </p>
       </div>
 
@@ -385,6 +421,12 @@
           <label for="email" class="block text-[15px] font-black text-navy mb-2">E-mail</label>
           <input type="email" id="email" name="email" required
             placeholder="nome@instituicao.com" class="field-input">
+        </div>
+
+        <div>
+          <label for="cpf" class="block text-[15px] font-black text-navy mb-2">CPF do responsável</label>
+          <input type="text" id="cpf" name="cpf" inputmode="numeric"
+            placeholder="000.000.000-00" maxlength="14" class="field-input">
         </div>
 
         <div>
@@ -420,7 +462,7 @@
         </label>
 
         <button type="submit" class="btn-primary mt-1">
-          Confirmar e ir para assinatura
+          Confirmar e ir para pagamento
         </button>
 
         <p class="text-center text-gray-muted text-[12px] mt-1 flex items-center justify-center gap-1.5 font-medium">
@@ -456,7 +498,7 @@
           <i data-lucide="map-pin" style="width:16px;height:16px;"></i>
           Av. Paulista, 1471, s. 02 — Bela Vista, São Paulo
         </p>
-        <a href="https://delianesantos.vercel.app/escola-legal" class="text-gold-light font-bold no-underline hover:underline block mt-2">delianesantos.vercel.app/escola-legal</a>
+        <a href="https://escolalegal.vercel.app/escola-legal" class="text-gold-light font-bold no-underline hover:underline block mt-2">escolalegal.vercel.app/escola-legal</a>
       </div>
 
       <p class="text-white/70 text-[11px] mt-6 tracking-wide font-medium">
@@ -526,7 +568,11 @@
         </div>
       </div>
 
-      <div class="max-w-xl mx-auto mt-5 text-center">
+      <div class="max-w-xl mx-auto mt-5 text-center space-y-3">
+        <a id="btn-download-contrato" href="#" download class="btn-copy hidden no-underline" style="display:none;">
+          <i data-lucide="download"></i>
+          <span>Baixar contrato assinado</span>
+        </a>
         <button type="button" id="btn-voltar" class="text-gray font-bold text-[14px] inline-flex items-center gap-2 hover:text-navy transition-colors bg-transparent border-0 cursor-pointer">
           <i data-lucide="arrow-left" style="width:16px;height:16px;"></i> Voltar e revisar os dados
         </button>
@@ -552,6 +598,31 @@
   </div>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <div id="sig-modal" class="sig-modal" aria-hidden="true" role="dialog" aria-labelledby="sig-modal-title">
+    <div class="sig-modal__bar">
+      <p class="sig-modal__title m-0" id="sig-modal-title">Assine como contratante</p>
+      <div class="sig-modal__actions">
+        <button type="button" id="sig-clear" class="sig-btn sig-btn--ghost">Limpar</button>
+        <button type="button" id="sig-cancel" class="sig-btn sig-btn--ghost">Voltar</button>
+        <button type="button" id="sig-confirm" class="sig-btn sig-btn--gold">Confirmar assinatura</button>
+      </div>
+    </div>
+    <div class="sig-modal__tabs">
+      <button type="button" class="sig-tab is-active" data-sig-tab="draw">Desenhar</button>
+      <button type="button" class="sig-tab" data-sig-tab="text">Digitar nome</button>
+    </div>
+    <div id="sig-panel-draw" class="sig-panel is-active">
+      <div class="sig-canvas-wrap">
+        <canvas id="sig-canvas"></canvas>
+      </div>
+      <p class="sig-hint">Use o dedo ou mouse. Toque em Confirmar assinatura quando terminar.</p>
+    </div>
+    <div id="sig-panel-text" class="sig-panel">
+      <input type="text" id="sig-text" class="sig-text-input" placeholder="Nome completo do responsável" autocomplete="name">
+      <p class="sig-hint">Seu nome será inserido como assinatura no contrato.</p>
+    </div>
+  </div>
 
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script>
@@ -582,10 +653,27 @@
     const btnCopyPix = document.getElementById('btn-copy-pix');
     const btnCopyPixLabel = document.getElementById('btn-copy-pix-label');
     const btnVoltar = document.getElementById('btn-voltar');
+    const btnDownloadContrato = document.getElementById('btn-download-contrato');
+    const cpfInput = document.getElementById('cpf');
+    const sigModal = document.getElementById('sig-modal');
+    const sigCanvas = document.getElementById('sig-canvas');
+    const sigText = document.getElementById('sig-text');
+    const sigCtx = sigCanvas.getContext('2d');
+    let pendingFormData = null;
+    let sigDrawing = false;
+    let sigHasInk = false;
 
     if (EMAIL_CONFIG.publicKey && window.emailjs) {
       emailjs.init({ publicKey: EMAIL_CONFIG.publicKey });
     }
+
+    cpfInput.addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 9) v = v.replace(/^(\d{3})(\d{3})(\d{3})(\d{0,2}).*/, '$1.$2.$3-$4');
+      else if (v.length > 6) v = v.replace(/^(\d{3})(\d{3})(\d{0,3}).*/, '$1.$2.$3');
+      else if (v.length > 3) v = v.replace(/^(\d{3})(\d{0,3}).*/, '$1.$2');
+      this.value = v;
+    });
 
     cnpjInput.addEventListener('input', function () {
       let v = this.value.replace(/\D/g, '').slice(0, 14);
@@ -605,59 +693,197 @@
       this.value = v;
     });
 
-    form.addEventListener('submit', async function (e) {
+    form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (!form.checkValidity()) { form.reportValidity(); return; }
 
-      const submitBtn = form.querySelector('button[type="submit"]');
-      const defaultLabel = 'Confirmar e ir para assinatura';
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Gerando contrato…';
-
-      const data = {
+      pendingFormData = {
         nomeInstituicao: form.nomeInstituicao.value.trim(),
         cnpj: form.cnpj.value.trim(),
         responsavel: form.responsavel.value.trim(),
+        cpf: form.cpf.value.trim(),
         email: form.email.value.trim(),
         whatsapp: form.whatsapp.value.trim(),
         endereco: form.endereco.value.trim(),
       };
+      sigText.value = pendingFormData.responsavel;
+      openSignatureModal();
+    });
+
+    function openSignatureModal() {
+      sigModal.classList.add('is-open');
+      sigModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      resizeSigCanvas();
+      clearSignatureCanvas();
+    }
+
+    function closeSignatureModal() {
+      sigModal.classList.remove('is-open');
+      sigModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    function resizeSigCanvas() {
+      const wrap = sigCanvas.parentElement;
+      const ratio = window.devicePixelRatio || 1;
+      const w = wrap.clientWidth;
+      const h = Math.max(wrap.clientHeight, window.innerHeight * 0.55);
+      sigCanvas.width = w * ratio;
+      sigCanvas.height = h * ratio;
+      sigCanvas.style.width = w + 'px';
+      sigCanvas.style.height = h + 'px';
+      sigCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      sigCtx.strokeStyle = '#001D3D';
+      sigCtx.lineWidth = 2.5;
+      sigCtx.lineCap = 'round';
+      sigCtx.lineJoin = 'round';
+    }
+
+    function clearSignatureCanvas() {
+      sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+      sigHasInk = false;
+    }
+
+    function canvasPoint(evt) {
+      const rect = sigCanvas.getBoundingClientRect();
+      const src = evt.touches ? evt.touches[0] : evt;
+      return { x: src.clientX - rect.left, y: src.clientY - rect.top };
+    }
+
+    sigCanvas.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      sigDrawing = true;
+      sigHasInk = true;
+      const p = canvasPoint(e);
+      sigCtx.beginPath();
+      sigCtx.moveTo(p.x, p.y);
+    });
+    sigCanvas.addEventListener('pointermove', function (e) {
+      if (!sigDrawing) return;
+      e.preventDefault();
+      const p = canvasPoint(e);
+      sigCtx.lineTo(p.x, p.y);
+      sigCtx.stroke();
+    });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) {
+      sigCanvas.addEventListener(ev, function () { sigDrawing = false; });
+    });
+
+    document.querySelectorAll('.sig-tab').forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        document.querySelectorAll('.sig-tab').forEach(function (t) { t.classList.remove('is-active'); });
+        document.querySelectorAll('.sig-panel').forEach(function (p) { p.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+        document.getElementById('sig-panel-' + tab.dataset.sigTab).classList.add('is-active');
+        if (tab.dataset.sigTab === 'draw') resizeSigCanvas();
+      });
+    });
+
+    document.getElementById('sig-clear').addEventListener('click', clearSignatureCanvas);
+    document.getElementById('sig-cancel').addEventListener('click', function () {
+      closeSignatureModal();
+      pendingFormData = null;
+    });
+    window.addEventListener('resize', function () {
+      if (sigModal.classList.contains('is-open')) resizeSigCanvas();
+    });
+
+    document.getElementById('sig-confirm').addEventListener('click', async function () {
+      if (!pendingFormData) return;
+      const activeTab = document.querySelector('.sig-tab.is-active').dataset.sigTab;
+      let assinatura = '';
+
+      if (activeTab === 'draw') {
+        if (!sigHasInk) {
+          showToast('Desenhe sua assinatura ou use a aba Digitar nome.');
+          return;
+        }
+        assinatura = sigCanvas.toDataURL('image/png');
+      } else {
+        const nome = sigText.value.trim();
+        if (!nome) {
+          showToast('Digite seu nome para assinar.');
+          return;
+        }
+        assinatura = renderTextSignature(nome);
+      }
+
+      closeSignatureModal();
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const defaultLabel = 'Confirmar e ir para pagamento';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Gerando contrato…';
 
       try {
-        sessionStorage.setItem('escolaLegalCheckoutEmail', data.email);
-        const signUrl = await createZapSignDocument(data);
-        sendConfirmationEmail(data);
-        window.location.href = signUrl;
-        return;
+        const result = await generateContract({ ...pendingFormData, assinatura });
+        sessionStorage.setItem('escolaLegalCheckoutEmail', pendingFormData.email);
+        sessionStorage.setItem('escolaLegalContratoBase64', result.docxBase64);
+        sessionStorage.setItem('escolaLegalContratoNome', result.filename || 'Contrato-Escola-Legal.docx');
+        setupContractDownload(result.docxBase64, result.filename);
+        await sendConfirmationEmail(pendingFormData, result.emailSent);
+        goToCheckout();
       } catch (err) {
-        console.error('[ZapSign]', err);
-        const msg = err.code === 'zapsign_plan_required'
-          ? 'Assinatura eletrônica indisponível: ative o plano API na ZapSign (Configurações → Plano).'
-          : err.code === 'zapsign_auth_error'
-            ? 'Erro de autenticação ZapSign. Verifique o token API nas configurações do site.'
-            : 'Não foi possível gerar o contrato. Tente novamente ou fale conosco no WhatsApp.';
-        showToast(msg);
+        console.error('[Contrato]', err);
+        showToast('Não foi possível gerar o contrato. Tente novamente ou fale conosco no WhatsApp.');
+      } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = defaultLabel;
+        pendingFormData = null;
       }
     });
 
-    async function createZapSignDocument(data) {
-      const res = await fetch('/api/zapsign', {
+    function renderTextSignature(name) {
+      const c = document.createElement('canvas');
+      c.width = 600;
+      c.height = 120;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.fillStyle = '#001D3D';
+      ctx.font = 'italic 42px Georgia, serif';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(name, 24, c.height / 2);
+      return c.toDataURL('image/png');
+    }
+
+    async function generateContract(data) {
+      const res = await fetch('/api/contrato', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
       const json = await res.json().catch(() => ({}));
-      if (!res.ok || !json.sign_url) {
-        const err = new Error(json.error || 'zapsign_failed');
-        err.code = json.error;
-        throw err;
-      }
-      return json.sign_url;
+      if (!res.ok || !json.docxBase64) throw new Error(json.error || 'contract_failed');
+      return json;
     }
 
-    async function sendConfirmationEmail(data) {
+    function setupContractDownload(base64, filename) {
+      if (!btnDownloadContrato || !base64) return;
+      const blob = b64ToBlob(base64, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      const url = URL.createObjectURL(blob);
+      btnDownloadContrato.href = url;
+      btnDownloadContrato.download = filename || 'Contrato-Escola-Legal.docx';
+      btnDownloadContrato.classList.remove('hidden');
+      btnDownloadContrato.style.display = 'flex';
+      lucide.createIcons();
+    }
+
+    function b64ToBlob(b64, type) {
+      const bin = atob(b64);
+      const arr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      return new Blob([arr], { type });
+    }
+
+    function restoreContractDownload() {
+      const b64 = sessionStorage.getItem('escolaLegalContratoBase64');
+      const nome = sessionStorage.getItem('escolaLegalContratoNome');
+      if (b64) setupContractDownload(b64, nome);
+    }
+
+    async function sendConfirmationEmail(data, smtpSent) {
+      if (smtpSent) return true;
       if (!(EMAIL_CONFIG.publicKey && EMAIL_CONFIG.serviceId && EMAIL_CONFIG.templateId && window.emailjs)) {
         console.warn('[EmailJS] Não configurado — e-mail de confirmação não enviado.', data);
         return false;
@@ -671,6 +897,7 @@
           whatsapp: data.whatsapp,
           endereco: data.endereco,
           valor: 'R$ 1.734,00',
+          mensagem: 'Seu contrato assinado foi enviado por e-mail (ou está disponível para download na página de pagamento).',
         });
         return true;
       } catch (err) {
@@ -690,9 +917,10 @@
       if (checkoutTitle) checkoutTitle.textContent = 'Assinatura concluída!';
       if (emailConfirmText) {
         emailConfirmText.textContent = savedEmail
-          ? `Contrato assinado! Pague a primeira parcela via PIX abaixo. Confirmação também enviada para ${savedEmail}.`
+          ? `Contrato assinado! Cópia enviada para ${savedEmail} (e para contato@delianesantos.com). Pague a primeira parcela via PIX abaixo.`
           : 'Contrato assinado! Pague a primeira parcela via PIX abaixo.';
       }
+      restoreContractDownload();
 
       if (!fromHash && location.hash !== '#checkout') {
         history.replaceState(null, '', location.pathname + location.search + '#checkout');
@@ -707,7 +935,9 @@
     }
 
     function handleRouteHash() {
-      if (location.hash === '#checkout') goToCheckout(true);
+      if (location.hash === '#checkout') {
+        goToCheckout(true);
+      }
     }
 
     window.addEventListener('hashchange', handleRouteHash);
