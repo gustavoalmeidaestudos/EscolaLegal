@@ -262,7 +262,7 @@ function buildContratoEmailHtml({
     ['E-mail', email],
     ['WhatsApp', whatsapp || '—'],
     ['Endereço', endereco],
-    ['Valor mensal', 'R$ 1.734,00'],
+    ['Valor mensal', 'R$ 1.740,00'],
   ];
 
   const tableRows = rows.map(([label, value], i) =>
@@ -319,7 +319,7 @@ async function sendEmailJsConfirmation(mailData, pdfEmailSent) {
       cnpj: mailData.cnpj,
       whatsapp: mailData.whatsapp,
       endereco: mailData.endereco,
-      valor: 'R$ 1.734,00',
+      valor: 'R$ 1.740,00',
       mensagem: pdfEmailSent
         ? 'Recebemos sua adesão! Você receberá dois e-mails: este de confirmação e outro com o contrato assinado em PDF em anexo.'
         : 'Recebemos sua adesão! Seu contrato assinado em PDF está disponível para download na página de pagamento.',

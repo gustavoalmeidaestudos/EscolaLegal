@@ -2,8 +2,8 @@
 // Env: ZAPSIGN_API_TOKEN, ZAPSIGN_TEMPLATE_ID
 
 const ZAPSIGN_URL = 'https://api.zapsign.com.br/api/v1/models/create-doc/';
-const VALOR_MENSAL = '1.734,00';
-const VALOR_EXTENSO = 'mil, setecentos e trinta e quatro reais';
+const VALOR_MENSAL = '1.740,00';
+const VALOR_EXTENSO = 'mil, setecentos e quarenta reais';
 const DIA_VENCIMENTO = '10';
 
 async function readBody(req) {
