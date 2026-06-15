@@ -818,6 +818,7 @@
       try {
         const result = await generateContract({ ...pendingFormData, assinatura });
         sessionStorage.setItem('escolaLegalCheckoutEmail', pendingFormData.email);
+        sessionStorage.setItem('escolaLegalContratoEmailSent', result.emailSent ? '1' : '0');
         sessionStorage.setItem('escolaLegalContratoBase64', result.pdfBase64);
         sessionStorage.setItem('escolaLegalContratoNome', result.filename || 'Contrato-Escola-Legal.pdf');
         setupContractDownload(result.pdfBase64, result.filename);
@@ -899,7 +900,7 @@
           valor: 'R$ 1.734,00',
           mensagem: resendSent
             ? 'Recebemos sua adesão! Você receberá dois e-mails: este de confirmação e outro com o contrato assinado em PDF em anexo.'
-            : 'Recebemos sua adesão! Baixe o contrato assinado em PDF na página de pagamento abaixo.',
+            : 'Recebemos sua adesão! Seu contrato assinado em PDF está disponível para download na página de pagamento (botão abaixo do PIX).',
         });
         return true;
       } catch (err) {
@@ -916,11 +917,19 @@
       window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
 
       const savedEmail = sessionStorage.getItem('escolaLegalCheckoutEmail');
+      const pdfEmailSent = sessionStorage.getItem('escolaLegalContratoEmailSent') === '1';
       if (checkoutTitle) checkoutTitle.textContent = 'Assinatura concluída!';
       if (emailConfirmText) {
-        emailConfirmText.textContent = savedEmail
-          ? `Você receberá 2 e-mails em ${savedEmail}: confirmação da adesão e contrato assinado em PDF. Pague a primeira parcela via PIX abaixo.`
-          : 'Contrato assinado! Baixe o PDF abaixo e pague a primeira parcela via PIX.';
+        if (savedEmail && pdfEmailSent) {
+          emailConfirmText.textContent =
+            `Você receberá 2 e-mails em ${savedEmail}: confirmação da adesão e contrato assinado em PDF. Pague a primeira parcela via PIX abaixo.`;
+        } else if (savedEmail) {
+          emailConfirmText.textContent =
+            `Confirmação enviada para ${savedEmail}. Baixe o contrato assinado em PDF abaixo e pague a primeira parcela via PIX.`;
+        } else {
+          emailConfirmText.textContent =
+            'Contrato assinado! Baixe o PDF abaixo e pague a primeira parcela via PIX.';
+        }
       }
       restoreContractDownload();
 
