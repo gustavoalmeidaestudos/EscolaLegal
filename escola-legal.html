@@ -818,9 +818,9 @@
       try {
         const result = await generateContract({ ...pendingFormData, assinatura });
         sessionStorage.setItem('escolaLegalCheckoutEmail', pendingFormData.email);
-        sessionStorage.setItem('escolaLegalContratoBase64', result.docxBase64);
-        sessionStorage.setItem('escolaLegalContratoNome', result.filename || 'Contrato-Escola-Legal.docx');
-        setupContractDownload(result.docxBase64, result.filename);
+        sessionStorage.setItem('escolaLegalContratoBase64', result.pdfBase64);
+        sessionStorage.setItem('escolaLegalContratoNome', result.filename || 'Contrato-Escola-Legal.pdf');
+        setupContractDownload(result.pdfBase64, result.filename);
         await sendConfirmationEmail(pendingFormData, result.emailSent);
         goToCheckout();
       } catch (err) {
@@ -854,16 +854,16 @@
         body: JSON.stringify(data),
       });
       const json = await res.json().catch(() => ({}));
-      if (!res.ok || !json.docxBase64) throw new Error(json.error || 'contract_failed');
+      if (!res.ok || !json.pdfBase64) throw new Error(json.error || 'contract_failed');
       return json;
     }
 
     function setupContractDownload(base64, filename) {
       if (!btnDownloadContrato || !base64) return;
-      const blob = b64ToBlob(base64, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      const blob = b64ToBlob(base64, 'application/pdf');
       const url = URL.createObjectURL(blob);
       btnDownloadContrato.href = url;
-      btnDownloadContrato.download = filename || 'Contrato-Escola-Legal.docx';
+      btnDownloadContrato.download = filename || 'Contrato-Escola-Legal.pdf';
       btnDownloadContrato.classList.remove('hidden');
       btnDownloadContrato.style.display = 'flex';
       lucide.createIcons();
@@ -882,8 +882,7 @@
       if (b64) setupContractDownload(b64, nome);
     }
 
-    async function sendConfirmationEmail(data, smtpSent) {
-      if (smtpSent) return true;
+    async function sendConfirmationEmail(data, resendSent) {
       if (!(EMAIL_CONFIG.publicKey && EMAIL_CONFIG.serviceId && EMAIL_CONFIG.templateId && window.emailjs)) {
         console.warn('[EmailJS] Não configurado — e-mail de confirmação não enviado.', data);
         return false;
@@ -894,10 +893,13 @@
           nome_responsavel: data.responsavel,
           nome_instituicao: data.nomeInstituicao,
           cnpj: data.cnpj,
+          cpf: data.cpf || '',
           whatsapp: data.whatsapp,
           endereco: data.endereco,
           valor: 'R$ 1.734,00',
-          mensagem: 'Seu contrato assinado foi enviado por e-mail (ou está disponível para download na página de pagamento).',
+          mensagem: resendSent
+            ? 'Recebemos sua adesão! Você receberá dois e-mails: este de confirmação e outro com o contrato assinado em PDF em anexo.'
+            : 'Recebemos sua adesão! Baixe o contrato assinado em PDF na página de pagamento abaixo.',
         });
         return true;
       } catch (err) {
@@ -917,8 +919,8 @@
       if (checkoutTitle) checkoutTitle.textContent = 'Assinatura concluída!';
       if (emailConfirmText) {
         emailConfirmText.textContent = savedEmail
-          ? `Contrato assinado! Cópia enviada para ${savedEmail} (e para contato@delianesantos.com). Pague a primeira parcela via PIX abaixo.`
-          : 'Contrato assinado! Pague a primeira parcela via PIX abaixo.';
+          ? `Você receberá 2 e-mails em ${savedEmail}: confirmação da adesão e contrato assinado em PDF. Pague a primeira parcela via PIX abaixo.`
+          : 'Contrato assinado! Baixe o PDF abaixo e pague a primeira parcela via PIX.';
       }
       restoreContractDownload();
 

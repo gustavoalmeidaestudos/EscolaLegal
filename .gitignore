@@ -21,3 +21,7 @@ Logo/Cópia*
 # Sistema operacional
 .DS_Store
 Thumbs.db
+.env*
+# PDFs de teste local
+Contrato/test-*.pdf
+

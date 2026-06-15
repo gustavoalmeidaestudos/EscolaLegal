@@ -1,16 +1,40 @@
-// Gera contrato Escola Legal (DOCX) com dados do formulário + assinatura desenhada.
-// Anexo por e-mail via SMTP (Titan/Gmail) se configurado — sem custo de API de assinatura.
+// Gera contrato Escola Legal em PDF: preenche campos + assinaturas sobre o layout oficial.
+// E-mail com anexo via Resend (RESEND_API_KEY). Confirmação separada via EmailJS no front.
 //
-// Env opcional: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, EMAIL_FROM, EMAIL_CC
+// Vercel — variáveis de ambiente:
+//   RESEND_API_KEY ou RESEND_API = re_... (painel Resend → API Keys)
+//   RESEND_FROM      = onboarding@resend.dev  (teste) ou Escola Legal <contrato@delianesantos.com> (após verificar domínio)
+//   EMAIL_CC         = contato@delianesantos.com (cópia do contrato)
+//
+// Teste com onboarding@resend.dev: só entrega no e-mail da conta Resend até verificar delianesantos.com em Domains.
 
 import fs from 'fs';
 import path from 'path';
-import Docxtemplater from 'docxtemplater';
-import PizZip from 'pizzip';
-import ImageModule from 'docxtemplater-image-module-free';
-import nodemailer from 'nodemailer';
+import { PDFDocument, rgb } from 'pdf-lib';
+import { Resend } from 'resend';
 
-const TEMPLATE = path.join(process.cwd(), 'Contrato', 'contrato-escola-legal-template.docx');
+const BASE_PDF = path.join(process.cwd(), 'Contrato', 'contrato-escola-legal-base.pdf');
+const ASSINATURA_DOUTORA = path.join(process.cwd(), 'Contrato', 'Assinatura Doutora.jpeg');
+const PAGE_H = 842.52;
+
+// Coordenadas calibradas no PDF base (PyMuPDF — origem no canto superior esquerdo).
+const CAMPOS_P0 = [
+  { x: 132, yTop: 201, w: 145, h: 12, key: 'instituicao', size: 9 },
+  { x: 105, yTop: 219, w: 172, h: 12, key: 'cnpj', size: 9 },
+  { x: 118, yTop: 237, w: 158, h: 12, key: 'endereco1', size: 9 },
+  { x: 60, yTop: 255, w: 216, h: 12, key: 'endereco2', size: 9 },
+  { x: 148, yTop: 273, w: 128, h: 12, key: 'representante', size: 9 },
+  { x: 95, yTop: 291, w: 180, h: 12, key: 'cpf', size: 9 },
+];
+
+const ASSINATURA_CAIXAS = [
+  { page: 0, x: 60, yTop: 342, w: 225, h: 30, who: 'cliente' },
+  { page: 0, x: 309, yTop: 343, w: 223, h: 28, who: 'doutora' },
+  { page: 1, x: 60, yTop: 753, w: 226, h: 30, who: 'cliente' },
+  { page: 1, x: 310, yTop: 753, w: 226, h: 30, who: 'doutora' },
+];
+
+const DATA_ASSINATURA = { page: 1, x: 59, yTop: 695, w: 185, h: 14 };
 
 async function readBody(req) {
   if (req.body && typeof req.body === 'object') return req.body;
@@ -32,8 +56,10 @@ function trim(str, max) {
 function splitEndereco(endereco) {
   const e = trim(endereco, 300);
   if (e.length <= 38) return { linha1: e, linha2: '' };
-  const cut = e.lastIndexOf(',', 38);
-  if (cut > 12) return { linha1: e.slice(0, cut + 1).trim(), linha2: e.slice(cut + 1).trim() };
+  const cut = e.lastIndexOf(',', 42);
+  if (cut > 10) return { linha1: e.slice(0, cut + 1).trim(), linha2: e.slice(cut + 1).trim() };
+  const sp = e.lastIndexOf(' ', 38);
+  if (sp > 10) return { linha1: e.slice(0, sp).trim(), linha2: e.slice(sp).trim() };
   return { linha1: e.slice(0, 38), linha2: e.slice(38).trim() };
 }
 
@@ -46,83 +72,227 @@ function formatDateBR(date) {
   });
 }
 
+function yPdf(yTop, height = 0) {
+  return PAGE_H - yTop - height;
+}
+
 function parseSignature(dataUrl) {
   if (!dataUrl || typeof dataUrl !== 'string') return null;
-  const m = dataUrl.match(/^data:image\/(png|jpeg);base64,(.+)$/i);
+  const m = dataUrl.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/i);
   if (!m) return null;
   return Buffer.from(m[2], 'base64');
 }
 
-function buildDocxBuffer(body, signatureBuffer) {
-  if (!fs.existsSync(TEMPLATE)) {
-    throw new Error('template_missing');
+async function buildPdf(body, clienteSigBuffer) {
+  if (!fs.existsSync(BASE_PDF)) throw new Error('base_pdf_missing');
+
+  const pdfDoc = await PDFDocument.load(fs.readFileSync(BASE_PDF));
+  // Remove página 3 em branco do modelo Word.
+  if (pdfDoc.getPageCount() > 2) {
+    pdfDoc.removePage(2);
   }
 
-  const endereco = splitEndereco(body.endereco);
-  const cpf = trim(body.cpf, 20) || '________________';
+  const pages = pdfDoc.getPages();
 
-  const imageOpts = {
-    centered: false,
-    getImage(tagValue) {
-      if (tagValue === 'SIGN') return signatureBuffer;
-      return signatureBuffer;
-    },
-    getSize() {
-      return [220, 70];
-    },
-  };
-
-  const zip = new PizZip(fs.readFileSync(TEMPLATE, 'binary'));
-  const doc = new Docxtemplater(zip, {
-    paragraphLoop: true,
-    linebreaks: true,
-    modules: [new ImageModule(imageOpts)],
-  });
-
-  doc.render({
+  const end = splitEndereco(body.endereco);
+  const cpf = trim(body.cpf, 20) || '—';
+  const dataAssinatura = formatDateBR(new Date());
+  const valores = {
     instituicao: trim(body.nomeInstituicao, 48),
     cnpj: trim(body.cnpj, 20),
-    endereco_linha1: endereco.linha1,
-    endereco_linha2: endereco.linha2 || ' ',
+    endereco1: end.linha1,
+    endereco2: end.linha2 || '',
     representante: trim(body.responsavel, 42),
     cpf,
-    assinatura_contratante: 'SIGN',
-    assinatura_contratante_final: 'SIGN',
+  };
+
+  const navy = rgb(0, 0.11, 0.24);
+  const white = rgb(1, 1, 1);
+
+  for (const campo of CAMPOS_P0) {
+    const page = pages[0];
+    const texto = valores[campo.key] || '';
+    if (!texto) continue;
+    page.drawRectangle({
+      x: campo.x - 2,
+      y: yPdf(campo.yTop, campo.h),
+      width: campo.w,
+      height: campo.h + 2,
+      color: white,
+      borderWidth: 0,
+    });
+    page.drawText(texto, {
+      x: campo.x,
+      y: yPdf(campo.yTop, campo.size),
+      size: campo.size,
+      color: navy,
+    });
+  }
+
+  // Data da assinatura (substitui data fixa do modelo).
+  const pData = pages[DATA_ASSINATURA.page];
+  pData.drawRectangle({
+    x: DATA_ASSINATURA.x - 2,
+    y: yPdf(DATA_ASSINATURA.yTop, DATA_ASSINATURA.h),
+    width: DATA_ASSINATURA.w,
+    height: DATA_ASSINATURA.h + 2,
+    color: white,
+  });
+  pData.drawText(`São Paulo, ${dataAssinatura}.`, {
+    x: DATA_ASSINATURA.x,
+    y: yPdf(DATA_ASSINATURA.yTop, 10),
+    size: 10,
+    color: navy,
   });
 
-  return doc.getZip().generate({ type: 'nodebuffer', compression: 'DEFLATE' });
+  let draImg;
+  if (fs.existsSync(ASSINATURA_DOUTORA)) {
+    const ext = ASSINATURA_DOUTORA.toLowerCase().endsWith('.png') ? 'png' : 'jpg';
+    draImg = ext === 'png'
+      ? await pdfDoc.embedPng(fs.readFileSync(ASSINATURA_DOUTORA))
+      : await pdfDoc.embedJpg(fs.readFileSync(ASSINATURA_DOUTORA));
+  }
+
+  const clienteImg = await pdfDoc.embedPng(clienteSigBuffer);
+
+  for (const caixa of ASSINATURA_CAIXAS) {
+    const page = pages[caixa.page];
+    const img = caixa.who === 'doutora' ? draImg : clienteImg;
+    if (!img) continue;
+
+    page.drawRectangle({
+      x: caixa.x,
+      y: yPdf(caixa.yTop, caixa.h),
+      width: caixa.w,
+      height: caixa.h,
+      color: white,
+      borderWidth: 0,
+    });
+
+    const scale = Math.min(caixa.w / img.width, caixa.h / img.height) * 0.88;
+    const w = img.width * scale;
+    const h = img.height * scale;
+
+    page.drawImage(img, {
+      x: caixa.x + (caixa.w - w) / 2,
+      y: yPdf(caixa.yTop, caixa.h) + (caixa.h - h) / 2,
+      width: w,
+      height: h,
+    });
+  }
+
+  return pdfDoc.save();
 }
 
-async function sendEmail({ to, cc, subject, html, attachmentBuffer, filename }) {
-  const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-  const from = process.env.EMAIL_FROM || user;
-  const port = Number(process.env.SMTP_PORT || 465);
+function escapeHtml(str) {
+  return (str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
 
-  if (!host || !user || !pass) return false;
+function buildContratoEmailHtml({
+  responsavel,
+  nomeInstituicao,
+  cnpj,
+  cpf,
+  email,
+  whatsapp,
+  endereco,
+  isOfficeCopy,
+}) {
+  const intro = isOfficeCopy
+    ? `<p><strong>Cópia interna</strong> — nova adesão ao Escola Legal:</p>`
+    : `<p>Olá, <strong>${escapeHtml(responsavel)}</strong>,</p>` +
+      `<p>Segue em anexo o <strong>contrato assinado</strong> da assessoria Escola Legal.</p>`;
 
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass },
-  });
+  return (
+    intro +
+    `<table cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px;">` +
+    `<tr><td><strong>Instituição</strong></td><td>${escapeHtml(nomeInstituicao)}</td></tr>` +
+    `<tr><td><strong>CNPJ</strong></td><td>${escapeHtml(cnpj)}</td></tr>` +
+    `<tr><td><strong>Responsável</strong></td><td>${escapeHtml(responsavel)}</td></tr>` +
+    `<tr><td><strong>CPF</strong></td><td>${escapeHtml(cpf || '—')}</td></tr>` +
+    `<tr><td><strong>E-mail</strong></td><td>${escapeHtml(email)}</td></tr>` +
+    `<tr><td><strong>WhatsApp</strong></td><td>${escapeHtml(whatsapp || '—')}</td></tr>` +
+    `<tr><td><strong>Endereço</strong></td><td>${escapeHtml(endereco)}</td></tr>` +
+    `<tr><td><strong>Valor</strong></td><td>R$ 1.734,00 / mês</td></tr>` +
+    `</table>` +
+    `<p style="margin-top:16px;">Próximo passo: efetuar o pagamento da primeira parcela via PIX (instruções na página de confirmação do site).</p>` +
+    `<p>Deliane Santos — Advocacia Educacional</p>`
+  );
+}
 
-  await transporter.sendMail({
+function resendApiKey() {
+  return process.env.RESEND_API_KEY || process.env.RESEND_API;
+}
+
+async function sendResendEmail({ to, subject, html, pdfBuffer, filename }) {
+  const key = resendApiKey();
+  const from = process.env.RESEND_FROM || 'onboarding@resend.dev';
+  if (!key) return { ok: false, error: 'no_key' };
+
+  const resend = new Resend(key);
+  const { data, error } = await resend.emails.send({
     from,
-    to,
-    cc: cc || undefined,
+    to: [to],
     subject,
     html,
     attachments: [{
       filename,
-      content: attachmentBuffer,
-      contentType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      content: Buffer.from(pdfBuffer).toString('base64'),
     }],
   });
 
-  return true;
+  if (error) throw error;
+  return { ok: true, id: data?.id };
+}
+
+async function sendContratoEmails(body, pdfBuffer, filename) {
+  const office = process.env.EMAIL_CC || 'dra.delianesantosadv@gmail.com';
+  const mailData = {
+    responsavel: trim(body.responsavel, 120),
+    nomeInstituicao: trim(body.nomeInstituicao, 200),
+    cnpj: trim(body.cnpj, 20),
+    cpf: trim(body.cpf, 20),
+    email: trim(body.email, 120),
+    whatsapp: trim(body.whatsapp, 30),
+    endereco: trim(body.endereco, 300),
+  };
+
+  let clientSent = false;
+  let officeSent = false;
+
+  try {
+    await sendResendEmail({
+      to: mailData.email,
+      subject: `Contrato Escola Legal — ${mailData.nomeInstituicao}`,
+      html: buildContratoEmailHtml({ ...mailData, isOfficeCopy: false }),
+      pdfBuffer,
+      filename,
+    });
+    clientSent = true;
+  } catch (err) {
+    console.error('[Resend cliente]', err);
+  }
+
+  if (office.toLowerCase() !== mailData.email.toLowerCase()) {
+    try {
+      await sendResendEmail({
+        to: office,
+        subject: `[Cópia] Contrato Escola Legal — ${mailData.nomeInstituicao}`,
+        html: buildContratoEmailHtml({ ...mailData, isOfficeCopy: true }),
+        pdfBuffer,
+        filename,
+      });
+      officeSent = true;
+    } catch (err) {
+      console.error('[Resend escritório]', err);
+    }
+  }
+
+  return { clientSent, officeSent };
 }
 
 export default async function handler(req, res) {
@@ -154,33 +324,27 @@ export default async function handler(req, res) {
   }
 
   try {
-    const docxBuffer = buildDocxBuffer(body, signatureBuffer);
-    const filename = `Contrato-Escola-Legal-${cnpj.replace(/\D/g, '') || 'adesao'}.docx`;
-    const cc = process.env.EMAIL_CC || 'contato@delianesantos.com';
+    const pdfBuffer = await buildPdf(body, signatureBuffer);
+    const filename = `Contrato-Escola-Legal-${cnpj.replace(/\D/g, '') || 'adesao'}.pdf`;
+    const cpf = trim(body.cpf, 20);
+    const whatsapp = trim(body.whatsapp, 30);
 
     let emailSent = false;
+    let officeCopySent = false;
     try {
-      emailSent = await sendEmail({
-        to: email,
-        cc,
-        subject: `Contrato Escola Legal — ${nomeInstituicao}`,
-        html:
-          `<p>Olá, <strong>${responsavel}</strong>,</p>` +
-          `<p>Segue em anexo o contrato da assessoria <strong>Escola Legal</strong> referente à instituição <strong>${nomeInstituicao}</strong>.</p>` +
-          `<p>Próximo passo: efetuar o pagamento da primeira parcela via PIX (instruções na página de confirmação).</p>` +
-          `<p>Deliane Santos — Advocacia Educacional</p>`,
-        attachmentBuffer: docxBuffer,
-        filename,
-      });
+      const mail = await sendContratoEmails(body, pdfBuffer, filename);
+      emailSent = mail.clientSent;
+      officeCopySent = mail.officeSent;
     } catch (mailErr) {
-      console.error('[SMTP]', mailErr);
+      console.error('[Resend]', mailErr);
     }
 
     res.status(200).json({
       ok: true,
       emailSent,
+      officeCopySent,
       filename,
-      docxBase64: docxBuffer.toString('base64'),
+      pdfBase64: Buffer.from(pdfBuffer).toString('base64'),
     });
   } catch (e) {
     console.error('[contrato]', e);
