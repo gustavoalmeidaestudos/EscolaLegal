@@ -631,7 +631,12 @@
         return;
       } catch (err) {
         console.error('[ZapSign]', err);
-        showToast('Não foi possível gerar o contrato. Tente novamente ou fale conosco no WhatsApp.');
+        const msg = err.code === 'zapsign_plan_required'
+          ? 'Assinatura eletrônica indisponível: ative o plano API na ZapSign (Configurações → Plano).'
+          : err.code === 'zapsign_auth_error'
+            ? 'Erro de autenticação ZapSign. Verifique o token API nas configurações do site.'
+            : 'Não foi possível gerar o contrato. Tente novamente ou fale conosco no WhatsApp.';
+        showToast(msg);
         submitBtn.disabled = false;
         submitBtn.textContent = defaultLabel;
       }
@@ -645,7 +650,9 @@
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || !json.sign_url) {
-        throw new Error(json.error || 'zapsign_failed');
+        const err = new Error(json.error || 'zapsign_failed');
+        err.code = json.error;
+        throw err;
       }
       return json.sign_url;
     }

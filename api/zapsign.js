@@ -134,10 +134,26 @@ export default async function handler(req, res) {
 
     if (!r.ok) {
       console.error('[ZapSign]', r.status, JSON.stringify(data));
+
+      if (r.status === 402) {
+        res.status(402).json({
+          error: 'zapsign_plan_required',
+          message: 'Conta ZapSign sem plano API ativo. Ative em Configurações > Plano e cobrança.',
+        });
+        return;
+      }
+
+      if (r.status === 403) {
+        res.status(403).json({
+          error: 'zapsign_auth_error',
+          message: 'Token da API ZapSign inválido ou incorreto.',
+        });
+        return;
+      }
+
       res.status(r.status >= 500 ? 502 : 400).json({
         error: 'zapsign_api_error',
         detail: data.detail || data.message || data.error || null,
-        fields: data,
         status: r.status,
       });
       return;
