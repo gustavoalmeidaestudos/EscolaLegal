@@ -4,6 +4,13 @@
 # Dependências (caso futuramente use Node)
 node_modules
 
+# WhatsApp automation (sessão local)
+scripts/whatsapp-grupo-live/.wwebjs_auth/
+scripts/whatsapp-grupo-live/config.js
+scripts/whatsapp-grupo-live/relatorio.json
+scripts/whatsapp-grupo-live/contatos-cafe-lei.vcf
+scripts/whatsapp-grupo-live/contatos-cafe-lei.csv
+
 # Arquivos de referência (não fazem parte do site publicado)
 EducaScale*
 *.rar

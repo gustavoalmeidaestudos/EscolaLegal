@@ -331,11 +331,11 @@
           </li>
           <li class="flex gap-3 items-start">
             <span class="w-7 h-7 rounded-full bg-gold/15 text-gold-dark flex items-center justify-center shrink-0 font-black text-sm">2</span>
-            <p class="text-[15px] text-navy font-medium leading-snug m-0">Seja redirecionado para a assinatura e o pagamento.</p>
+            <p class="text-[15px] text-navy font-medium leading-snug m-0">Assine o contrato eletronicamente na ZapSign.</p>
           </li>
           <li class="flex gap-3 items-start">
             <span class="w-7 h-7 rounded-full bg-gold/15 text-gold-dark flex items-center justify-center shrink-0 font-black text-sm">3</span>
-            <p class="text-[15px] text-navy font-medium leading-snug m-0">Assine eletronicamente e receba a confirmação no e-mail.</p>
+            <p class="text-[15px] text-navy font-medium leading-snug m-0">Volte aqui e pague a primeira parcela via PIX.</p>
           </li>
         </ol>
       </section>
@@ -357,7 +357,7 @@
           Dados da Instituição
         </h2>
         <p class="text-gray text-[15px] leading-relaxed font-medium">
-          Preencha os campos abaixo. Em seguida você receberá a confirmação por e-mail e será direcionado para a assinatura e o pagamento.
+          Preencha os campos abaixo. Em seguida você será direcionado para assinar o contrato e, após a assinatura, para o pagamento via PIX.
         </p>
       </div>
 
@@ -420,7 +420,7 @@
         </label>
 
         <button type="submit" class="btn-primary mt-1">
-          Confirmar e ir para o pagamento
+          Confirmar e ir para assinatura
         </button>
 
         <p class="text-center text-gray-muted text-[12px] mt-1 flex items-center justify-center gap-1.5 font-medium">
@@ -478,9 +478,9 @@
           <i data-lucide="mail-check" style="width:20px;height:20px;stroke-width:2.25;"></i>
         </span>
         <div>
-          <p class="font-black text-navy text-[15px] m-0">Adesão registrada!</p>
+          <p class="font-black text-navy text-[15px] m-0" id="checkout-title">Assinatura concluída!</p>
           <p class="text-gray text-[14px] leading-snug m-0 mt-0.5" id="email-confirm-text">
-            Enviamos a confirmação e os próximos passos para o seu e-mail.
+            Agora efetue o pagamento da primeira parcela via PIX abaixo.
           </p>
         </div>
       </div>
@@ -520,7 +520,7 @@
             </div>
             <div class="pix-step">
               <span class="pix-step__num">3</span>
-              <p class="text-[14px] text-navy font-medium leading-snug m-0">Pronto! O contrato de assinatura eletrônica chegará no seu e-mail.</p>
+              <p class="text-[14px] text-navy font-medium leading-snug m-0">Pronto! Sua adesão estará confirmada após a compensação do PIX.</p>
             </div>
           </div>
         </div>
@@ -577,6 +577,7 @@
     const formSection = document.getElementById('formulario-section');
     const landingView = document.getElementById('landing-view');
     const checkoutView = document.getElementById('checkout-view');
+    const checkoutTitle = document.getElementById('checkout-title');
     const emailConfirmText = document.getElementById('email-confirm-text');
     const btnCopyPix = document.getElementById('btn-copy-pix');
     const btnCopyPixLabel = document.getElementById('btn-copy-pix-label');
@@ -609,8 +610,9 @@
       if (!form.checkValidity()) { form.reportValidity(); return; }
 
       const submitBtn = form.querySelector('button[type="submit"]');
+      const defaultLabel = 'Confirmar e ir para assinatura';
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Processando…';
+      submitBtn.textContent = 'Gerando contrato…';
 
       const data = {
         nomeInstituicao: form.nomeInstituicao.value.trim(),
@@ -621,18 +623,32 @@
         endereco: form.endereco.value.trim(),
       };
 
-      const sent = await sendConfirmationEmail(data);
-      if (emailConfirmText) {
-        emailConfirmText.textContent = sent
-          ? `Enviamos a confirmação e os próximos passos para ${data.email}.`
-          : `Anote o seu e-mail (${data.email}) — a confirmação e o contrato serão enviados em seguida.`;
+      try {
+        sessionStorage.setItem('escolaLegalCheckoutEmail', data.email);
+        const signUrl = await createZapSignDocument(data);
+        sendConfirmationEmail(data);
+        window.location.href = signUrl;
+        return;
+      } catch (err) {
+        console.error('[ZapSign]', err);
+        showToast('Não foi possível gerar o contrato. Tente novamente ou fale conosco no WhatsApp.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = defaultLabel;
       }
-
-      goToCheckout();
-
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Confirmar e ir para o pagamento';
     });
+
+    async function createZapSignDocument(data) {
+      const res = await fetch('/api/zapsign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || !json.sign_url) {
+        throw new Error(json.error || 'zapsign_failed');
+      }
+      return json.sign_url;
+    }
 
     async function sendConfirmationEmail(data) {
       if (!(EMAIL_CONFIG.publicKey && EMAIL_CONFIG.serviceId && EMAIL_CONFIG.templateId && window.emailjs)) {
@@ -656,19 +672,39 @@
       }
     }
 
-    function goToCheckout() {
+    function goToCheckout(fromHash) {
       landingView.classList.add('hidden');
       checkoutView.classList.remove('hidden');
       floatingCta.classList.remove('is-visible');
       lucide.createIcons();
       window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+
+      const savedEmail = sessionStorage.getItem('escolaLegalCheckoutEmail');
+      if (checkoutTitle) checkoutTitle.textContent = 'Assinatura concluída!';
+      if (emailConfirmText) {
+        emailConfirmText.textContent = savedEmail
+          ? `Contrato assinado! Pague a primeira parcela via PIX abaixo. Confirmação também enviada para ${savedEmail}.`
+          : 'Contrato assinado! Pague a primeira parcela via PIX abaixo.';
+      }
+
+      if (!fromHash && location.hash !== '#checkout') {
+        history.replaceState(null, '', location.pathname + location.search + '#checkout');
+      }
     }
 
     function backToForm() {
       checkoutView.classList.add('hidden');
       landingView.classList.remove('hidden');
+      history.replaceState(null, '', location.pathname + location.search);
       formSection.scrollIntoView({ behavior: 'smooth' });
     }
+
+    function handleRouteHash() {
+      if (location.hash === '#checkout') goToCheckout(true);
+    }
+
+    window.addEventListener('hashchange', handleRouteHash);
+    handleRouteHash();
 
     btnVoltar.addEventListener('click', backToForm);
 
