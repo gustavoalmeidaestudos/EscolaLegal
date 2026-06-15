@@ -313,6 +313,7 @@ async function sendEmailJsConfirmation(mailData, pdfEmailSent) {
     user_id: userId,
     template_params: {
       to_email: mailData.email,
+      email: mailData.email,
       nome_responsavel: mailData.responsavel,
       nome_instituicao: mailData.nomeInstituicao,
       cnpj: mailData.cnpj,
@@ -457,26 +458,22 @@ export default async function handler(req, res) {
 
     let emailSent = false;
     let officeCopySent = false;
-    let emailJsSent = false;
-    let mailData = null;
 
     try {
       const mail = await sendContratoEmails(body, pdfBuffer, filename);
       emailSent = mail.clientSent;
       officeCopySent = mail.officeCopySent;
-      mailData = mail.mailData;
     } catch (mailErr) {
       console.error('[Resend]', mailErr);
     }
 
-    if (mailData) {
-      emailJsSent = await sendEmailJsConfirmation(mailData, emailSent);
-    }
+    // Confirmação EmailJS: enviada pelo navegador para o e-mail do formulário (to_email).
 
     res.status(200).json({
       ok: true,
       emailSent,
-      emailJsSent,
+      emailJsSent: false,
+      resendNeedsDomain: !emailSent,
       officeCopySent,
       filename,
       pdfBase64: Buffer.from(pdfBuffer).toString('base64'),

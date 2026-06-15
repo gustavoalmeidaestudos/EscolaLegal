@@ -819,20 +819,18 @@
         const result = await generateContract({ ...pendingFormData, assinatura });
         sessionStorage.setItem('escolaLegalCheckoutEmail', pendingFormData.email);
         sessionStorage.setItem('escolaLegalContratoEmailSent', result.emailSent ? '1' : '0');
-        sessionStorage.setItem('escolaLegalEmailJsSent', result.emailJsSent ? '1' : '0');
+        sessionStorage.setItem('escolaLegalEmailJsSent', '0');
         sessionStorage.setItem('escolaLegalContratoBase64', result.pdfBase64);
         sessionStorage.setItem('escolaLegalContratoNome', result.filename || 'Contrato-Escola-Legal.pdf');
         setupContractDownload(result.pdfBase64, result.filename);
 
-        if (!result.emailJsSent) {
-          const jsOk = await sendConfirmationEmail(pendingFormData, result.emailSent);
-          if (jsOk) sessionStorage.setItem('escolaLegalEmailJsSent', '1');
-        }
+        const jsOk = await sendConfirmationEmail(pendingFormData, result.emailSent);
+        sessionStorage.setItem('escolaLegalEmailJsSent', jsOk ? '1' : '0');
 
-        if (!result.emailSent && !result.emailJsSent) {
-          showToast('Contrato gerado! Baixe o PDF abaixo. E-mails podem demorar alguns minutos.');
-        } else if (!result.emailJsSent) {
-          showToast('Contrato enviado! Se não receber a confirmação em alguns minutos, verifique o spam.');
+        if (!jsOk) {
+          showToast('Contrato gerado! Baixe o PDF abaixo. Não foi possível enviar a confirmação por e-mail — verifique o spam ou fale conosco.');
+        } else if (!result.emailSent) {
+          showToast('Confirmação enviada! O PDF está disponível para download abaixo (anexo por e-mail requer domínio verificado no Resend).');
         }
 
         goToCheckout();
@@ -943,6 +941,7 @@
       try {
         await emailjs.send(EMAIL_CONFIG.serviceId, EMAIL_CONFIG.templateId, {
           to_email: data.email,
+          email: data.email,
           nome_responsavel: data.responsavel,
           nome_instituicao: data.nomeInstituicao,
           cnpj: data.cnpj,
@@ -974,13 +973,13 @@
       if (emailConfirmText) {
         if (savedEmail && pdfEmailSent && emailJsSent) {
           emailConfirmText.textContent =
-            `Enviamos 2 e-mails para ${savedEmail}: confirmação da adesão (EmailJS) e contrato assinado em PDF (anexo). Pague a primeira parcela via PIX abaixo.`;
+            `Confirmação enviada para ${savedEmail} e contrato em PDF anexo no mesmo e-mail. Pague a primeira parcela via PIX abaixo.`;
+        } else if (savedEmail && emailJsSent) {
+          emailConfirmText.textContent =
+            `Confirmação enviada para ${savedEmail}. Baixe o contrato assinado em PDF abaixo — o anexo por e-mail só funciona após verificar domínio no Resend. Pague via PIX.`;
         } else if (savedEmail && pdfEmailSent) {
           emailConfirmText.textContent =
             `Contrato em PDF enviado para ${savedEmail}. Baixe também abaixo e pague a primeira parcela via PIX.`;
-        } else if (savedEmail && emailJsSent) {
-          emailConfirmText.textContent =
-            `Confirmação enviada para ${savedEmail}. Baixe o contrato assinado em PDF abaixo e pague via PIX.`;
         } else if (savedEmail) {
           emailConfirmText.textContent =
             `Baixe o contrato assinado em PDF abaixo e pague a primeira parcela via PIX.`;
