@@ -4,7 +4,7 @@
 // Vercel — variáveis de ambiente:
 //   RESEND_API_KEY ou RESEND_API = re_... (painel Resend → API Keys)
 //   RESEND_FROM      = onboarding@resend.dev  (teste) ou Escola Legal <contrato@delianesantos.com> (após verificar domínio)
-//   EMAIL_CC         = contato@delianesantos.com (cópia do contrato)
+//   EMAILJS_PRIVATE_KEY  = chave privada (EmailJS → Account → Security → non-browser API)
 //
 // Teste com onboarding@resend.dev: só entrega no e-mail da conta Resend até verificar delianesantos.com em Domains.
 
@@ -248,41 +248,115 @@ function buildContratoEmailHtml({
   endereco,
   isOfficeCopy,
 }) {
-  const intro = isOfficeCopy
-    ? `<p><strong>Cópia interna</strong> — nova adesão ao Escola Legal:</p>`
-    : `<p>Olá, <strong>${escapeHtml(responsavel)}</strong>,</p>` +
-      `<p>Segue em anexo o <strong>contrato assinado</strong> da assessoria Escola Legal.</p>`;
+  const greeting = isOfficeCopy
+    ? `<p style="margin:0 0 12px;font-size:15px;color:#334155;">Nova adesão registrada — cópia interna para o escritório.</p>`
+    : `<p style="margin:0 0 8px;font-size:16px;color:#001D3D;">Olá, <strong>${escapeHtml(responsavel)}</strong>,</p>` +
+      `<p style="margin:0 0 16px;font-size:15px;color:#334155;line-height:1.6;">Segue em anexo o <strong>contrato assinado</strong> da assessoria <strong>Escola Legal</strong>. Guarde este documento para seus registros.</p>`;
 
-  return (
-    intro +
-    `<table cellpadding="6" cellspacing="0" style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:14px;">` +
-    `<tr><td><strong>Instituição</strong></td><td>${escapeHtml(nomeInstituicao)}</td></tr>` +
-    `<tr><td><strong>CNPJ</strong></td><td>${escapeHtml(cnpj)}</td></tr>` +
-    `<tr><td><strong>Responsável</strong></td><td>${escapeHtml(responsavel)}</td></tr>` +
-    `<tr><td><strong>CPF</strong></td><td>${escapeHtml(cpf || '—')}</td></tr>` +
-    `<tr><td><strong>E-mail</strong></td><td>${escapeHtml(email)}</td></tr>` +
-    `<tr><td><strong>WhatsApp</strong></td><td>${escapeHtml(whatsapp || '—')}</td></tr>` +
-    `<tr><td><strong>Endereço</strong></td><td>${escapeHtml(endereco)}</td></tr>` +
-    `<tr><td><strong>Valor</strong></td><td>R$ 1.734,00 / mês</td></tr>` +
-    `</table>` +
-    `<p style="margin-top:16px;">Próximo passo: efetuar o pagamento da primeira parcela via PIX (instruções na página de confirmação do site).</p>` +
-    `<p>Deliane Santos — Advocacia Educacional</p>`
-  );
+  const rows = [
+    ['Instituição', nomeInstituicao],
+    ['CNPJ', cnpj],
+    ['Responsável', responsavel],
+    ['CPF', cpf || '—'],
+    ['E-mail', email],
+    ['WhatsApp', whatsapp || '—'],
+    ['Endereço', endereco],
+    ['Valor mensal', 'R$ 1.734,00'],
+  ];
+
+  const tableRows = rows.map(([label, value], i) =>
+    `<tr style="background:${i % 2 ? '#FAF9F6' : '#ffffff'};">` +
+    `<td style="padding:10px 14px;font-size:13px;font-weight:700;color:#001D3D;width:34%;border-bottom:1px solid #E8E4DC;">${escapeHtml(label)}</td>` +
+    `<td style="padding:10px 14px;font-size:14px;color:#334155;border-bottom:1px solid #E8E4DC;">${escapeHtml(value)}</td>` +
+    `</tr>`,
+  ).join('');
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;background:#F3F1EC;font-family:Georgia,'Times New Roman',serif;">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#F3F1EC;padding:24px 12px;">
+<tr><td align="center">
+<table role="presentation" width="600" cellspacing="0" cellpadding="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,29,61,0.12);">
+<tr><td style="background:linear-gradient(135deg,#001428 0%,#001D3D 55%,#002952 100%);padding:28px 32px;text-align:center;">
+  <p style="margin:0 0 6px;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#C5943E;font-family:Arial,sans-serif;">Deliane Santos · Advocacia Educacional</p>
+  <h1 style="margin:0;font-size:28px;font-weight:400;color:#FAF9F6;letter-spacing:0.02em;">Escola Legal</h1>
+  <p style="margin:10px 0 0;font-size:14px;color:rgba(250,249,246,0.82);font-family:Arial,sans-serif;">Contrato assinado em anexo</p>
+</td></tr>
+<tr><td style="height:4px;background:linear-gradient(90deg,#A67A2E,#C5943E,#D4AD5E,#C5943E,#A67A2E);"></td></tr>
+<tr><td style="padding:28px 32px 8px;">${greeting}</td></tr>
+<tr><td style="padding:0 32px 24px;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #E8E4DC;border-radius:12px;overflow:hidden;">${tableRows}</table>
+</td></tr>
+<tr><td style="padding:0 32px 28px;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:rgba(197,148,62,0.10);border-left:4px solid #C5943E;border-radius:8px;">
+  <tr><td style="padding:14px 16px;font-size:14px;line-height:1.6;color:#001D3D;font-family:Arial,sans-serif;">
+    <strong>Próximo passo:</strong> efetue o pagamento da primeira parcela via PIX. As instruções estão na página de confirmação do site.
+  </td></tr></table>
+</td></tr>
+<tr><td style="padding:20px 32px 28px;background:#FAF9F6;border-top:1px solid #E8E4DC;text-align:center;">
+  <p style="margin:0 0 4px;font-size:14px;color:#001D3D;font-weight:700;">Dra. Deliane Santos</p>
+  <p style="margin:0;font-size:13px;color:#64748b;font-family:Arial,sans-serif;">contato@delianesantos.com · Advocacia Educacional</p>
+</td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+}
+
+async function sendEmailJsConfirmation(mailData, pdfEmailSent) {
+  const userId = process.env.EMAILJS_PUBLIC_KEY || process.env.EMAILJS_USER_ID || 'aBHcQ2aT5S4Q4xK8k';
+  const serviceId = process.env.EMAILJS_SERVICE_ID || 'service_r1lxjn9';
+  const templateId = process.env.EMAILJS_TEMPLATE_ID || 'template_z2j4a5l';
+  const privateKey = process.env.EMAILJS_PRIVATE_KEY;
+
+  const payload = {
+    service_id: serviceId,
+    template_id: templateId,
+    user_id: userId,
+    template_params: {
+      to_email: mailData.email,
+      nome_responsavel: mailData.responsavel,
+      nome_instituicao: mailData.nomeInstituicao,
+      cnpj: mailData.cnpj,
+      whatsapp: mailData.whatsapp,
+      endereco: mailData.endereco,
+      valor: 'R$ 1.734,00',
+      mensagem: pdfEmailSent
+        ? 'Recebemos sua adesão! Você receberá dois e-mails: este de confirmação e outro com o contrato assinado em PDF em anexo.'
+        : 'Recebemos sua adesão! Seu contrato assinado em PDF está disponível para download na página de pagamento.',
+    },
+  };
+  if (privateKey) payload.accessToken = privateKey;
+
+  try {
+    const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      console.error('[EmailJS]', res.status, text);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('[EmailJS]', err);
+    return false;
+  }
 }
 
 function resendApiKey() {
   return process.env.RESEND_API_KEY || process.env.RESEND_API;
 }
 
-async function sendResendEmail({ to, subject, html, pdfBuffer, filename }) {
+async function sendResendEmail({ to, bcc, subject, html, pdfBuffer, filename }) {
   const key = resendApiKey();
-  const from = process.env.RESEND_FROM || 'onboarding@resend.dev';
+  const from = process.env.RESEND_FROM || 'Escola Legal <onboarding@resend.dev>';
   if (!key) return { ok: false, error: 'no_key' };
 
   const resend = new Resend(key);
   const { data, error } = await resend.emails.send({
     from,
-    to: [to],
+    to: Array.isArray(to) ? to : [to],
+    bcc: bcc && bcc.length ? bcc : undefined,
     subject,
     html,
     attachments: [{
@@ -307,38 +381,43 @@ async function sendContratoEmails(body, pdfBuffer, filename) {
     endereco: trim(body.endereco, 300),
   };
 
+  const subject = `Contrato Escola Legal — ${mailData.nomeInstituicao}`;
+  const html = buildContratoEmailHtml({ ...mailData, isOfficeCopy: false });
+  const bcc = office.toLowerCase() !== mailData.email.toLowerCase() ? [office] : undefined;
+
   let clientSent = false;
-  let officeSent = false;
+  let officeCopySent = false;
 
   try {
     await sendResendEmail({
       to: mailData.email,
-      subject: `Contrato Escola Legal — ${mailData.nomeInstituicao}`,
-      html: buildContratoEmailHtml({ ...mailData, isOfficeCopy: false }),
+      bcc,
+      subject,
+      html,
       pdfBuffer,
       filename,
     });
     clientSent = true;
+    officeCopySent = !!bcc;
   } catch (err) {
-    console.error('[Resend cliente]', err);
-  }
-
-  if (office.toLowerCase() !== mailData.email.toLowerCase()) {
-    try {
-      await sendResendEmail({
-        to: office,
-        subject: `[Cópia] Contrato Escola Legal — ${mailData.nomeInstituicao}`,
-        html: buildContratoEmailHtml({ ...mailData, isOfficeCopy: true }),
-        pdfBuffer,
-        filename,
-      });
-      officeSent = true;
-    } catch (err) {
-      console.error('[Resend escritório]', err);
+    console.error('[Resend]', err);
+    if (bcc) {
+      try {
+        await sendResendEmail({
+          to: office,
+          subject: `[Cópia] ${subject}`,
+          html: buildContratoEmailHtml({ ...mailData, isOfficeCopy: true }),
+          pdfBuffer,
+          filename,
+        });
+        officeCopySent = true;
+      } catch (officeErr) {
+        console.error('[Resend escritório]', officeErr);
+      }
     }
   }
 
-  return { clientSent, officeSent };
+  return { clientSent, officeCopySent, mailData };
 }
 
 export default async function handler(req, res) {
@@ -377,17 +456,26 @@ export default async function handler(req, res) {
 
     let emailSent = false;
     let officeCopySent = false;
+    let emailJsSent = false;
+    let mailData = null;
+
     try {
       const mail = await sendContratoEmails(body, pdfBuffer, filename);
       emailSent = mail.clientSent;
-      officeCopySent = mail.officeSent;
+      officeCopySent = mail.officeCopySent;
+      mailData = mail.mailData;
     } catch (mailErr) {
       console.error('[Resend]', mailErr);
+    }
+
+    if (mailData) {
+      emailJsSent = await sendEmailJsConfirmation(mailData, emailSent);
     }
 
     res.status(200).json({
       ok: true,
       emailSent,
+      emailJsSent,
       officeCopySent,
       filename,
       pdfBase64: Buffer.from(pdfBuffer).toString('base64'),

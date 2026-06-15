@@ -664,7 +664,7 @@
     let sigHasInk = false;
 
     if (EMAIL_CONFIG.publicKey && window.emailjs) {
-      emailjs.init({ publicKey: EMAIL_CONFIG.publicKey });
+      emailjs.init({ publicKey: EMAIL_CONFIG.publicKey, blockHeadless: false });
     }
 
     cpfInput.addEventListener('input', function () {
@@ -819,10 +819,22 @@
         const result = await generateContract({ ...pendingFormData, assinatura });
         sessionStorage.setItem('escolaLegalCheckoutEmail', pendingFormData.email);
         sessionStorage.setItem('escolaLegalContratoEmailSent', result.emailSent ? '1' : '0');
+        sessionStorage.setItem('escolaLegalEmailJsSent', result.emailJsSent ? '1' : '0');
         sessionStorage.setItem('escolaLegalContratoBase64', result.pdfBase64);
         sessionStorage.setItem('escolaLegalContratoNome', result.filename || 'Contrato-Escola-Legal.pdf');
         setupContractDownload(result.pdfBase64, result.filename);
-        await sendConfirmationEmail(pendingFormData, result.emailSent);
+
+        if (!result.emailJsSent) {
+          const jsOk = await sendConfirmationEmail(pendingFormData, result.emailSent);
+          if (jsOk) sessionStorage.setItem('escolaLegalEmailJsSent', '1');
+        }
+
+        if (!result.emailSent && !result.emailJsSent) {
+          showToast('Contrato gerado! Baixe o PDF abaixo. E-mails podem demorar alguns minutos.');
+        } else if (!result.emailJsSent) {
+          showToast('Contrato enviado! Se não receber a confirmação em alguns minutos, verifique o spam.');
+        }
+
         goToCheckout();
       } catch (err) {
         console.error('[Contrato]', err);
@@ -934,7 +946,6 @@
           nome_responsavel: data.responsavel,
           nome_instituicao: data.nomeInstituicao,
           cnpj: data.cnpj,
-          cpf: data.cpf || '',
           whatsapp: data.whatsapp,
           endereco: data.endereco,
           valor: 'R$ 1.734,00',
@@ -958,14 +969,21 @@
 
       const savedEmail = sessionStorage.getItem('escolaLegalCheckoutEmail');
       const pdfEmailSent = sessionStorage.getItem('escolaLegalContratoEmailSent') === '1';
+      const emailJsSent = sessionStorage.getItem('escolaLegalEmailJsSent') === '1';
       if (checkoutTitle) checkoutTitle.textContent = 'Assinatura concluída!';
       if (emailConfirmText) {
-        if (savedEmail && pdfEmailSent) {
+        if (savedEmail && pdfEmailSent && emailJsSent) {
           emailConfirmText.textContent =
-            `Você receberá 2 e-mails em ${savedEmail}: confirmação da adesão e contrato assinado em PDF. Pague a primeira parcela via PIX abaixo.`;
+            `Enviamos 2 e-mails para ${savedEmail}: confirmação da adesão (EmailJS) e contrato assinado em PDF (anexo). Pague a primeira parcela via PIX abaixo.`;
+        } else if (savedEmail && pdfEmailSent) {
+          emailConfirmText.textContent =
+            `Contrato em PDF enviado para ${savedEmail}. Baixe também abaixo e pague a primeira parcela via PIX.`;
+        } else if (savedEmail && emailJsSent) {
+          emailConfirmText.textContent =
+            `Confirmação enviada para ${savedEmail}. Baixe o contrato assinado em PDF abaixo e pague via PIX.`;
         } else if (savedEmail) {
           emailConfirmText.textContent =
-            `Confirmação enviada para ${savedEmail}. Baixe o contrato assinado em PDF abaixo e pague a primeira parcela via PIX.`;
+            `Baixe o contrato assinado em PDF abaixo e pague a primeira parcela via PIX.`;
         } else {
           emailConfirmText.textContent =
             'Contrato assinado! Baixe o PDF abaixo e pague a primeira parcela via PIX.';
