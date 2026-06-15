@@ -304,7 +304,7 @@ function buildContratoEmailHtml({
 async function sendEmailJsConfirmation(mailData, pdfEmailSent) {
   const userId = process.env.EMAILJS_PUBLIC_KEY || process.env.EMAILJS_USER_ID || 'aBHcQ2aT5S4Q4xK8k';
   const serviceId = process.env.EMAILJS_SERVICE_ID || 'service_uq4609j';
-  const templateId = process.env.EMAILJS_TEMPLATE_ID || 'template_yrb9gmn';
+  const templateId = process.env.EMAILJS_TEMPLATE_ID || 'template_gt5wskh';
   const privateKey = process.env.EMAILJS_PRIVATE_KEY;
 
   const payload = {
