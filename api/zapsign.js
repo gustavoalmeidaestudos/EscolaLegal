@@ -86,8 +86,9 @@ export default async function handler(req, res) {
     return;
   }
 
-  const token = process.env.ZAPSIGN_API_TOKEN;
-  const templateId = process.env.ZAPSIGN_TEMPLATE_ID;
+  const tokenRaw = process.env.ZAPSIGN_API_TOKEN || '';
+  const token = tokenRaw.replace(/^Bearer\s+/i, '').trim();
+  const templateId = (process.env.ZAPSIGN_TEMPLATE_ID || '').trim();
 
   if (!token || !templateId) {
     res.status(503).json({ error: 'zapsign_not_configured' });
@@ -132,9 +133,12 @@ export default async function handler(req, res) {
     const data = await r.json().catch(() => ({}));
 
     if (!r.ok) {
+      console.error('[ZapSign]', r.status, JSON.stringify(data));
       res.status(r.status >= 500 ? 502 : 400).json({
         error: 'zapsign_api_error',
         detail: data.detail || data.message || data.error || null,
+        fields: data,
+        status: r.status,
       });
       return;
     }
