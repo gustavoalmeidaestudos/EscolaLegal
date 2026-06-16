@@ -47,7 +47,14 @@ const BACKUP_HEADER =
   'Cadastros mais recentes aparecem primeiro.\n\n' +
   '---\n\n';
 
-function doGet() {
+function doGet(e) {
+  const p = e && e.parameter ? e.parameter : {};
+  if (p.probe === 'secret') {
+    if (SECRET && SECRET !== 'COLE_SEU_TOKEN_AQUI' && p.secret !== SECRET) {
+      return jsonResponse({ ok: false, error: 'forbidden' });
+    }
+    return jsonResponse({ ok: true, probe: 'secret_ok' });
+  }
   return jsonResponse({
     ok: true,
     service: 'ficha-vip',

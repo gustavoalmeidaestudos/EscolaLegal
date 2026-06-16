@@ -420,6 +420,7 @@
 
       let saved = false;
       let viaEmailOnly = false;
+      let emailWarning = '';
       let errorCode = '';
       try {
         const r = await fetch('/api/ficha-vip', {
@@ -431,6 +432,7 @@
         try { payload = await r.json(); } catch (e) { payload = {}; }
         saved = r.ok && payload.ok !== false;
         viaEmailOnly = saved && payload.storage === 'email';
+        emailWarning = payload.warning || '';
         if (!saved) {
           errorCode = payload.error || ('http_' + r.status);
           if (payload.detail) console.warn('[ficha-vip]', payload.detail);
@@ -443,7 +445,7 @@
       if (!saved) {
         const emailed = await sendNotificationEmail(data);
         if (emailed) {
-          showSuccess(data.email, true);
+          showSuccess(data.email, true, 'webhook_failed');
         } else if (errorCode === 'storage_not_configured') {
           showFormError('Cadastro não foi gravado: a planilha ainda não está configurada no servidor. Avise a equipe da Dra. Deliane.');
         } else if (errorCode === 'secret_mismatch') {
@@ -458,7 +460,7 @@
         return;
       }
 
-      showSuccess(data.email, viaEmailOnly);
+      showSuccess(data.email, viaEmailOnly, emailWarning);
       btnSubmit.disabled = false;
       btnSubmit.textContent = 'Enviar cadastro';
     });
@@ -484,12 +486,18 @@
       }
     }
 
-    function showSuccess(email, viaEmailOnly) {
+    function showSuccess(email, viaEmailOnly, warning) {
       formView.classList.add('is-hidden');
       successView.classList.add('is-visible');
-      document.getElementById('success-email-text').textContent = viaEmailOnly
-        ? 'Recebemos seus dados por e-mail (a planilha está temporariamente indisponível). Nossa equipe entrará em contato em ' + email + '.'
-        : 'Confirmação registrada para ' + email + '.';
+      let msg;
+      if (viaEmailOnly && warning === 'secret_mismatch') {
+        msg = 'Recebemos seus dados por e-mail, mas a planilha Google não gravou: o token SECRET do Apps Script não confere com o do Vercel. Avise a equipe da Dra. Deliane para alinhar os dois valores e reimplantar o script.';
+      } else if (viaEmailOnly) {
+        msg = 'Recebemos seus dados por e-mail (a planilha está temporariamente indisponível). Nossa equipe entrará em contato em ' + email + '.';
+      } else {
+        msg = 'Confirmação registrada para ' + email + '. Os dados foram salvos na planilha.';
+      }
+      document.getElementById('success-email-text').textContent = msg;
       window.scrollTo({ top: 0, behavior: 'smooth' });
       lucide.createIcons();
     }

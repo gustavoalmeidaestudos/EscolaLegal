@@ -330,6 +330,38 @@ async function pingWebhook(webhook) {
 
 }
 
+async function probeWebhookSecret(webhook, secret) {
+  if (!webhook || !secret) {
+    return { ok: false, problem: 'secret_not_configured' };
+  }
+  try {
+    const url = `${webhook}${webhook.includes('?') ? '&' : '?'}probe=secret&secret=${encodeURIComponent(secret)}`;
+    const r = await fetchWithRedirects(url, { method: 'GET' });
+    const text = await r.text();
+    let parsed = {};
+    try { parsed = JSON.parse(text); } catch (e) { parsed = {}; }
+    if (parsed.probe === 'secret_ok' && parsed.ok === true) {
+      return { ok: true };
+    }
+    if (parsed.error === 'forbidden') {
+      return { ok: false, problem: 'secret_mismatch' };
+    }
+    return {
+      ok: false,
+      problem: 'webhook_error',
+      detail: parsed.error || text.slice(0, 160),
+    };
+  } catch (e) {
+    return {
+      ok: false,
+      problem: e.signInBlocked || e.message === 'google_login_required'
+        ? 'google_login_required'
+        : 'network_error',
+      detail: String(e.message || e),
+    };
+  }
+}
+
 
 
 export default async function handler(req, res) {
@@ -370,6 +402,8 @@ export default async function handler(req, res) {
 
       webhookReachable: false,
 
+      secretValid: null,
+
       webhookDetail: null,
 
     };
@@ -386,8 +420,20 @@ export default async function handler(req, res) {
 
       health.webhookProblem = ping.problem || null;
 
-      if (ping.problem === 'google_login_required') {
+      if (secretSet) {
+        const probe = await probeWebhookSecret(webhook, process.env.FICHA_VIP_SECRET);
+        health.secretValid = probe.ok;
+        if (!probe.ok) {
+          health.secretProblem = probe.problem;
+          health.secretDetail = probe.detail || null;
+        }
+      }
+
+      if (ping.problem === 'google_login_required' || health.secretProblem === 'google_login_required') {
         health.fix = 'No Apps Script: Implantar > Gerenciar implantações > editar > Quem pode acessar = Qualquer pessoa. Depois copie a URL /exec para FICHA_VIP_WEBHOOK_URL no Vercel.';
+      } else if (health.secretValid === false && health.secretProblem === 'secret_mismatch') {
+        health.fix = 'O SECRET no Apps Script (const SECRET = "...") deve ser EXATAMENTE igual ao FICHA_VIP_SECRET no Vercel. Depois: Implantar > Nova implantação.';
+        health.ok = false;
       } else if (ping.problem === 'webhook_error' && ping.detail === 'forbidden') {
         health.fix = 'O SECRET do Apps Script deve ser igual ao FICHA_VIP_SECRET no Vercel.';
       }
@@ -480,7 +526,11 @@ export default async function handler(req, res) {
 
       const emailed = await sendResendFallback(row);
       if (emailed) {
-        res.status(200).json({ ok: true, storage: 'email' });
+        res.status(200).json({
+          ok: true,
+          storage: 'email',
+          warning: detail === 'forbidden' ? 'secret_mismatch' : 'webhook_failed',
+        });
         return;
       }
 
