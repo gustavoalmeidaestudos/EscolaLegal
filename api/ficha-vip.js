@@ -258,8 +258,16 @@ function isGoogleSignInUrl(url) {
 
 async function fetchWithRedirects(url, options = {}, maxRedirects = 5) {
   let currentUrl = url;
+  let method = options.method || 'GET';
+  let headers = options.headers ? { ...options.headers } : {};
+  let body = options.body;
+
   for (let i = 0; i < maxRedirects; i++) {
-    const r = await fetch(currentUrl, { ...options, redirect: 'manual' });
+    const fetchOptions = { method, headers, redirect: 'manual' };
+    if (body !== undefined && method !== 'GET' && method !== 'HEAD') {
+      fetchOptions.body = body;
+    }
+    const r = await fetch(currentUrl, fetchOptions);
     if (r.status >= 300 && r.status < 400) {
       const location = r.headers.get('location');
       if (!location) return r;
@@ -268,6 +276,15 @@ async function fetchWithRedirects(url, options = {}, maxRedirects = 5) {
         const err = new Error('google_login_required');
         err.signInBlocked = true;
         throw err;
+      }
+      // Apps Script: após POST, o redirect exige GET (o body já foi recebido no 1º request).
+      if (method === 'POST') {
+        method = 'GET';
+        body = undefined;
+        const nextHeaders = { ...headers };
+        delete nextHeaders['Content-Length'];
+        delete nextHeaders['content-length'];
+        headers = nextHeaders;
       }
       continue;
     }
@@ -335,8 +352,15 @@ async function probeWebhookSecret(webhook, secret) {
     return { ok: false, problem: 'secret_not_configured' };
   }
   try {
-    const url = `${webhook}${webhook.includes('?') ? '&' : '?'}probe=secret&secret=${encodeURIComponent(secret)}`;
-    const r = await fetchWithRedirects(url, { method: 'GET' });
+    const probeBody = JSON.stringify({ secret, probe: 'secret' });
+    const r = await fetchWithRedirects(webhook, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': String(Buffer.byteLength(probeBody, 'utf8')),
+      },
+      body: probeBody,
+    });
     const text = await r.text();
     let parsed = {};
     try { parsed = JSON.parse(text); } catch (e) { parsed = {}; }

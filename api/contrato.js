@@ -427,22 +427,37 @@ async function sendContratoEmails(body, pdfBuffer, filename) {
 
 async function postToGoogleWebhook(webhook, payload) {
   const body = JSON.stringify(payload);
-  const headers = {
+  let headers = {
     'Content-Type': 'application/json',
     'Content-Length': String(Buffer.byteLength(body, 'utf8')),
   };
   let currentUrl = webhook;
+  let method = 'POST';
+  let requestBody = body;
+
   for (let i = 0; i < 5; i++) {
-    const response = await fetch(currentUrl, { method: 'POST', headers, body, redirect: 'manual' });
+    const fetchOptions = { method, headers, redirect: 'manual' };
+    if (requestBody !== undefined && method !== 'GET' && method !== 'HEAD') {
+      fetchOptions.body = requestBody;
+    }
+    const response = await fetch(currentUrl, fetchOptions);
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get('location');
       if (!location) break;
       currentUrl = location.startsWith('http') ? location : new URL(location, currentUrl).href;
+      if (method === 'POST') {
+        method = 'GET';
+        requestBody = undefined;
+        const nextHeaders = { ...headers };
+        delete nextHeaders['Content-Length'];
+        delete nextHeaders['content-length'];
+        headers = nextHeaders;
+      }
       continue;
     }
     const text = await response.text();
     let parsed = {};
-    try { parsed = JSON.parse(text); } catch (e) { parsed = {}; }
+    try { parsed = JSON.parse(text); } catch (e) { parsed = { raw: text.slice(0, 300) }; }
     return { response, parsed };
   }
   return { response: null, parsed: {} };

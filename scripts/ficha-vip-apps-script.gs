@@ -71,6 +71,10 @@ function doPost(e) {
       return jsonResponse({ ok: false, error: 'forbidden' });
     }
 
+    if (payload.probe === 'secret') {
+      return jsonResponse({ ok: true, probe: 'secret_ok' });
+    }
+
     if (payload.origem === 'escola-legal') {
       const escolaSheet = getOrCreateSheet_(SHEET_NAME_ESCOLA_LEGAL, HEADERS_ESCOLA_LEGAL);
       escolaSheet.appendRow([
