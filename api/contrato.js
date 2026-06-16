@@ -422,6 +422,43 @@ async function sendContratoEmails(body, pdfBuffer, filename) {
   return { clientSent, officeCopySent, mailData };
 }
 
+async function storeEscolaLegalLead(body, meta = {}) {
+  const webhook = process.env.ESCOLA_LEGAL_WEBHOOK_URL || process.env.FICHA_VIP_WEBHOOK_URL;
+  if (!webhook) return { ok: false, reason: 'missing_webhook' };
+
+  const payload = {
+    secret: process.env.FICHA_VIP_SECRET || process.env.ESCOLA_LEGAL_SECRET || '',
+    origem: 'escola-legal',
+    dataHora: new Date().toISOString(),
+    nomeInstituicao: trim(body.nomeInstituicao, 200),
+    cnpj: trim(body.cnpj, 20),
+    responsavel: trim(body.responsavel, 120),
+    cpf: trim(body.cpf, 20),
+    email: trim(body.email, 120),
+    whatsapp: trim(body.whatsapp, 30),
+    endereco: trim(body.endereco, 300),
+    valorMensal: 'R$ 1.740,00',
+    emailContratoEnviado: meta.emailSent ? 'sim' : 'nao',
+    copiaEscritorioEnviada: meta.officeCopySent ? 'sim' : 'nao',
+  };
+
+  try {
+    const response = await fetch(webhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      redirect: 'follow',
+    });
+    const text = await response.text();
+    let parsed = {};
+    try { parsed = JSON.parse(text); } catch (e) { parsed = {}; }
+    return { ok: response.ok && parsed.ok === true };
+  } catch (err) {
+    console.error('[contrato][sheet]', err);
+    return { ok: false, reason: 'request_failed' };
+  }
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -467,6 +504,8 @@ export default async function handler(req, res) {
       console.error('[Resend]', mailErr);
     }
 
+    const storage = await storeEscolaLegalLead(body, { emailSent, officeCopySent });
+
     // Confirmação EmailJS: enviada pelo navegador para o e-mail do formulário (to_email).
 
     res.status(200).json({
@@ -475,6 +514,7 @@ export default async function handler(req, res) {
       emailJsSent: false,
       resendNeedsDomain: !emailSent,
       officeCopySent,
+      storageOk: storage.ok,
       filename,
       pdfBase64: Buffer.from(pdfBuffer).toString('base64'),
     });
