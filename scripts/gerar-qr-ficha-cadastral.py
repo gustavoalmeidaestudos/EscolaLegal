@@ -5,7 +5,7 @@ import qrcode
 from PIL import Image, ImageDraw
 
 OUT = Path(__file__).resolve().parent.parent / "QR-CODE" / "qr-ficha-cadastral.png"
-URL = "https://delianesantos.vercel.app/ficha-cadastral"
+URL = "https://escolalegal.vercel.app/ficha-cadastral"
 
 QR_SIZE = 380
 FRAME_PAD = 16
