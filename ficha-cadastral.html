@@ -448,8 +448,8 @@
           showFormError('Cadastro não foi gravado: a planilha ainda não está configurada no servidor. Avise a equipe da Dra. Deliane.');
         } else if (errorCode === 'secret_mismatch') {
           showFormError('Não foi possível gravar na planilha: o token SECRET do Google Apps Script não confere com o do Vercel. Ajuste os dois para o mesmo valor e implante de novo.');
-        } else if (errorCode === 'webhook_failed') {
-          showFormError('Não foi possível gravar na planilha agora. Tente novamente em instantes ou fale conosco pelo WhatsApp.');
+        } else if (errorCode === 'google_login_required' || errorCode === 'webhook_failed') {
+          showFormError('A planilha Google bloqueou o acesso. No Apps Script, reimplante como App da Web com acesso "Qualquer pessoa" (não "com Conta Google") e confira a URL /exec no Vercel.');
         } else {
           showFormError('Não foi possível concluir o cadastro agora. Tente novamente em instantes ou fale conosco pelo WhatsApp.');
         }

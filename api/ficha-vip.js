@@ -252,6 +252,10 @@ async function sendResendFallback(row) {
   }
 }
 
+function isGoogleSignInUrl(url) {
+  return /accounts\.google\.com/i.test(url || '');
+}
+
 async function fetchWithRedirects(url, options = {}, maxRedirects = 5) {
   let currentUrl = url;
   for (let i = 0; i < maxRedirects; i++) {
@@ -260,6 +264,11 @@ async function fetchWithRedirects(url, options = {}, maxRedirects = 5) {
       const location = r.headers.get('location');
       if (!location) return r;
       currentUrl = location.startsWith('http') ? location : new URL(location, currentUrl).href;
+      if (isGoogleSignInUrl(currentUrl)) {
+        const err = new Error('google_login_required');
+        err.signInBlocked = true;
+        throw err;
+      }
       continue;
     }
     return r;
@@ -300,11 +309,22 @@ async function pingWebhook(webhook) {
 
       detail: parsed.error || (parsed.ok === true ? 'ok' : text.slice(0, 160)),
 
+      problem: text.includes('accounts.google.com') || text.includes('signin')
+        ? 'google_login_required'
+        : (parsed.ok === true ? null : 'webhook_error'),
+
     };
 
   } catch (e) {
 
-    return { ok: false, status: 0, detail: String(e.message || e) };
+    return {
+      ok: false,
+      status: 0,
+      detail: String(e.message || e),
+      problem: e.signInBlocked || e.message === 'google_login_required'
+        ? 'google_login_required'
+        : 'network_error',
+    };
 
   }
 
@@ -363,6 +383,14 @@ export default async function handler(req, res) {
       health.webhookDetail = ping.detail;
 
       health.webhookStatus = ping.status;
+
+      health.webhookProblem = ping.problem || null;
+
+      if (ping.problem === 'google_login_required') {
+        health.fix = 'No Apps Script: Implantar > Gerenciar implantações > editar > Quem pode acessar = Qualquer pessoa. Depois copie a URL /exec para FICHA_VIP_WEBHOOK_URL no Vercel.';
+      } else if (ping.problem === 'webhook_error' && ping.detail === 'forbidden') {
+        health.fix = 'O SECRET do Apps Script deve ser igual ao FICHA_VIP_SECRET no Vercel.';
+      }
 
     }
 
@@ -484,6 +512,15 @@ export default async function handler(req, res) {
   } catch (e) {
 
     console.error('[ficha-vip] Erro ao enviar para planilha', e);
+
+    if (e.signInBlocked || e.message === 'google_login_required') {
+      res.status(502).json({
+        ok: false,
+        error: 'google_login_required',
+        detail: 'O Google está pedindo login. Reimplante o Apps Script com acesso Qualquer pessoa e atualize a URL /exec no Vercel.',
+      });
+      return;
+    }
 
     res.status(500).json({ ok: false, error: 'server_error' });
 
