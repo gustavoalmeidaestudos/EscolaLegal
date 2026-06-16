@@ -11,8 +11,11 @@
 //   GITHUB_BACKUP_TOKEN    → (opcional) token GitHub para append em backups/ficha-vip-cadastros.md
 
 //   GITHUB_BACKUP_REPO     → (opcional) ex.: gustavoalmeidaestudos/EscolaLegal
+//
+//   GOOGLE_SHEETS_ID              → ID da planilha (recomendado — grava direto, sem Apps Script)
+//   GOOGLE_SERVICE_ACCOUNT_JSON   → JSON da conta de serviço Google (cole inteiro em uma linha)
 
-
+import { appendVipRowToGoogleSheet, googleSheetsConfigured } from './google-sheets.js';
 
 async function readBody(req) {
 
@@ -422,7 +425,9 @@ export default async function handler(req, res) {
 
       ok: true,
 
-      storageConfigured: Boolean(webhook),
+      storageConfigured: googleSheetsConfigured() || Boolean(webhook),
+
+      googleSheetsConfigured: googleSheetsConfigured(),
 
       secretConfigured: secretSet,
 
@@ -534,9 +539,9 @@ export default async function handler(req, res) {
 
 
 
-  if (!webhook) {
+  if (!googleSheetsConfigured() && !webhook) {
 
-    console.warn('[ficha-vip] FICHA_VIP_WEBHOOK_URL não configurada', row);
+    console.warn('[ficha-vip] Nenhum armazenamento configurado', row);
 
     res.status(503).json({ ok: false, error: 'storage_not_configured' });
 
@@ -547,6 +552,41 @@ export default async function handler(req, res) {
 
 
   try {
+
+    let sheetsApiError = null;
+
+    if (googleSheetsConfigured()) {
+      try {
+        const sheetResult = await appendVipRowToGoogleSheet(row);
+        if (sheetResult.ok) {
+          try { await appendGithubMarkdownBackup(row); } catch (e) { /* opcional */ }
+          res.status(200).json({
+            ok: true,
+            storage: 'google_sheets',
+            sheet: sheetResult.sheet,
+            spreadsheet: sheetResult.spreadsheet,
+          });
+          return;
+        }
+      } catch (e) {
+        sheetsApiError = e;
+        console.error('[ficha-vip] Google Sheets API', e);
+      }
+    }
+
+    if (!webhook) {
+      const emailed = await sendResendFallback(row);
+      if (emailed) {
+        res.status(200).json({ ok: true, storage: 'email', warning: 'sheets_api_failed' });
+        return;
+      }
+      res.status(502).json({
+        ok: false,
+        error: 'sheets_api_failed',
+        detail: String(sheetsApiError?.message || sheetsApiError || 'unknown'),
+      });
+      return;
+    }
 
     const { r, parsed } = await postToWebhook(webhook, { secret, ...row });
 
