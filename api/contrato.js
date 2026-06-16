@@ -21,13 +21,14 @@ const ASSINATURA_DRA_TEXTO = 'Deliane J Santos';
 const PAGE_H = 842.52;
 
 // Coordenadas calibradas no PDF base (PyMuPDF — origem no canto superior esquerdo).
+// coverX/coverW apagam as linhas "_____" do modelo quando o campo tem valor.
 const CAMPOS_P0 = [
-  { x: 132, yTop: 201, w: 145, h: 14, key: 'instituicao', size: 10 },
-  { x: 105, yTop: 219, w: 172, h: 14, key: 'cnpj', size: 10 },
-  { x: 118, yTop: 237, w: 158, h: 14, key: 'endereco1', size: 10 },
-  { x: 60, yTop: 255, w: 216, h: 14, key: 'endereco2', size: 10 },
-  { x: 148, yTop: 273, w: 128, h: 14, key: 'representante', size: 10 },
-  { x: 95, yTop: 291, w: 180, h: 14, key: 'cpf', size: 10 },
+  { x: 132, yTop: 201, w: 145, h: 14, key: 'instituicao', size: 10, coverX: 108, coverW: 172 },
+  { x: 105, yTop: 219, w: 172, h: 14, key: 'cnpj', size: 10, coverX: 78, coverW: 202 },
+  { x: 118, yTop: 237, w: 158, h: 14, key: 'endereco1', size: 10, coverX: 88, coverW: 192 },
+  { x: 60, yTop: 255, w: 216, h: 14, key: 'endereco2', size: 10, coverX: 58, coverW: 222 },
+  { x: 148, yTop: 273, w: 128, h: 14, key: 'representante', size: 10, coverX: 118, coverW: 162 },
+  { x: 95, yTop: 291, w: 180, h: 14, key: 'cpf', size: 10, coverX: 72, coverW: 206 },
 ];
 
 const ASSINATURA_CAIXAS = [
@@ -170,11 +171,13 @@ async function buildPdf(body, clienteSigBuffer) {
     const page = pages[0];
     const texto = valores[campo.key] || '';
     if (!texto) continue;
+    const coverX = campo.coverX ?? campo.x - 2;
+    const coverW = campo.coverW ?? campo.w + 4;
     page.drawRectangle({
-      x: campo.x - 2,
-      y: yPdf(campo.yTop, campo.h),
-      width: campo.w,
-      height: campo.h + 2,
+      x: coverX,
+      y: yPdf(campo.yTop, campo.h + 2),
+      width: coverW,
+      height: campo.h + 4,
       color: white,
       borderWidth: 0,
     });

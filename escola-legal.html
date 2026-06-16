@@ -716,12 +716,17 @@
         .replace(/"/g, '&quot;');
     }
 
+    function previewField(value, placeholder) {
+      const v = (value || '').trim();
+      return escapeHtml(v || placeholder);
+    }
+
     function buildContractPreviewHtml(data) {
-      const inst = escapeHtml(data.nomeInstituicao || '________________________________');
-      const cnpj = escapeHtml(data.cnpj || '__.___.___/____-__');
-      const resp = escapeHtml(data.responsavel || '________________________________');
-      const cpf = escapeHtml(data.cpf || '___.___.___-__');
-      const end = escapeHtml(data.endereco || '________________________________');
+      const inst = previewField(data.nomeInstituicao, '—');
+      const cnpj = previewField(data.cnpj, '—');
+      const resp = previewField(data.responsavel, '—');
+      const cpf = previewField(data.cpf, '—');
+      const end = previewField(data.endereco, '—');
       const hoje = new Date().toLocaleDateString('pt-BR', {
         day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Sao_Paulo',
       });
