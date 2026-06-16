@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code — Ficha Cadastral Grupo VIP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #e8e4dc;
+      font-family: 'Lato', system-ui, sans-serif;
+      padding: 24px;
+    }
+
+    /* Cartão quadrado — pronto para imprimir ou salvar como imagem */
+    .qr-card {
+      width: min(520px, 92vw);
+      aspect-ratio: 1;
+      position: relative;
+      padding: 14px;
+      background: linear-gradient(145deg, #E6C277 0%, #C5943E 35%, #A67A2E 70%, #D4AD5E 100%);
+      border-radius: 28px;
+      box-shadow:
+        0 24px 60px rgba(0, 29, 61, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+    .qr-card::before {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      border-radius: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      pointer-events: none;
+    }
+
+    .qr-card__inner {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(180deg, #FAF9F6 0%, #F3EDE4 100%);
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 24px 26px;
+      text-align: center;
+      border: 2px solid rgba(197, 148, 62, 0.45);
+    }
+
+    .qr-card__badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #D4AD5E, #C5943E);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 5px 16px;
+      border-radius: 100px;
+      margin-bottom: 12px;
+    }
+
+    .qr-card__logo {
+      height: 36px;
+      width: auto;
+      margin-bottom: 14px;
+      opacity: 0.95;
+    }
+
+    .qr-frame {
+      position: relative;
+      padding: 12px;
+      background: #fff;
+      border-radius: 16px;
+      border: 3px solid #C5943E;
+      box-shadow:
+        0 0 0 1px #E6C277,
+        0 8px 24px rgba(0, 29, 61, 0.1);
+      margin-bottom: 18px;
+    }
+    .qr-frame::before,
+    .qr-frame::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border: 3px solid #A67A2E;
+      pointer-events: none;
+    }
+    .qr-frame::before {
+      top: 8px; left: 8px;
+      border-right: none; border-bottom: none;
+      border-radius: 4px 0 0 0;
+    }
+    .qr-frame::after {
+      bottom: 8px; right: 8px;
+      border-left: none; border-top: none;
+      border-radius: 0 0 4px 0;
+    }
+
+    .qr-frame img {
+      display: block;
+      width: min(220px, 52vw);
+      height: min(220px, 52vw);
+      border-radius: 8px;
+    }
+
+    .qr-card__title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(17px, 4.2vw, 21px);
+      font-weight: 700;
+      color: #001D3D;
+      line-height: 1.35;
+      max-width: 28ch;
+      margin-bottom: 8px;
+    }
+
+    .qr-card__sub {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #A67A2E;
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .qr-card { box-shadow: none; width: 480px; }
+    }
+  </style>
+</head>
+<body>
+
+  <article class="qr-card" id="qr-card" aria-label="Cartão QR Code Ficha Cadastral Grupo VIP">
+    <img src="qr-ficha-cadastral-card.png" alt="Escaneie o Código QR para realizar o cadastro no Grupo VIP"
+      style="width:min(520px,92vw);height:auto;border-radius:28px;box-shadow:0 24px 60px rgba(0,29,61,0.22);">
+  </article>
+
+</body>
+</html>
