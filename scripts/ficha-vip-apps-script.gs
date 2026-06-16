@@ -9,6 +9,10 @@
 // ↓↓↓ COLE AQUI o token que VOCÊ inventou (o mesmo do Vercel) ↓↓↓
 const SECRET = 'COLE_SEU_TOKEN_AQUI';
 
+// ID da planilha (da URL: .../spreadsheets/d/ESTE_ID/edit). Deixe '' se o script
+// foi criado em Extensões → Apps Script DENTRO da planilha.
+const SPREADSHEET_ID = '';
+
 const SHEET_NAME_VIP = 'Cadastros';
 const VIP_SHEET_CANDIDATES = ['Contatos', 'Cadastros'];
 const SHEET_NAME_ESCOLA_LEGAL = 'Escola-Legal';
@@ -56,11 +60,18 @@ function doGet(e) {
     }
     return jsonResponse({ ok: true, probe: 'secret_ok' });
   }
+  var spreadsheetName = null;
+  var spreadsheetLinked = false;
+  try {
+    spreadsheetName = getSpreadsheet_().getName();
+    spreadsheetLinked = true;
+  } catch (ignore) {}
   return jsonResponse({
     ok: true,
     service: 'ficha-vip',
     sheets: VIP_SHEET_CANDIDATES.concat([SHEET_NAME_ESCOLA_LEGAL]),
-    spreadsheet: SpreadsheetApp.getActiveSpreadsheet().getName(),
+    spreadsheet: spreadsheetName,
+    spreadsheetLinked: spreadsheetLinked,
     secretRequired: SECRET && SECRET !== 'COLE_SEU_TOKEN_AQUI',
   });
 }
@@ -116,7 +127,7 @@ function doPost(e) {
       // Não falha o cadastro se o backup .md no Drive der erro.
     }
 
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = getSpreadsheet_();
     return jsonResponse({
       ok: true,
       sheet: vipSheet.getName(),
@@ -149,7 +160,7 @@ function formatMarkdownEntry_(p) {
 
 function appendMarkdownBackup_(payload) {
   const entry = formatMarkdownEntry_(payload);
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet_();
   const ssFile = DriveApp.getFileById(ss.getId());
   const folders = ssFile.getParents();
   const folder = folders.hasNext() ? folders.next() : DriveApp.getRootFolder();
@@ -173,8 +184,22 @@ function appendMarkdownBackup_(payload) {
   }
 }
 
+function getSpreadsheet_() {
+  if (SPREADSHEET_ID) {
+    return SpreadsheetApp.openById(SPREADSHEET_ID);
+  }
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) {
+    throw new Error(
+      'Planilha nao vinculada. Abra a planilha → Extensões → Apps Script e cole o codigo la, ' +
+      'OU defina SPREADSHEET_ID com o ID da URL da planilha.'
+    );
+  }
+  return ss;
+}
+
 function getVipSheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet_();
   for (var i = 0; i < VIP_SHEET_CANDIDATES.length; i++) {
     var existing = ss.getSheetByName(VIP_SHEET_CANDIDATES[i]);
     if (existing) return existing;
@@ -183,7 +208,7 @@ function getVipSheet_() {
 }
 
 function getOrCreateSheet_(sheetName, headers) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet_();
   let sheet = ss.getSheetByName(sheetName);
   if (!sheet) {
     sheet = ss.insertSheet(sheetName);
@@ -198,5 +223,17 @@ function jsonResponse(obj) {
   const output = ContentService.createTextOutput(JSON.stringify(obj));
   output.setMimeType(ContentService.MimeType.JSON);
   return output;
+}
+
+/** Rode esta funcao no editor (Executar) uma vez para autorizar e testar a planilha. */
+function testGravarLinha() {
+  var ss = getSpreadsheet_();
+  var sheet = getVipSheet_();
+  sheet.appendRow([
+    new Date().toISOString(),
+    'TESTE MANUAL — pode apagar',
+    '', '', '', '', '', '', '', '',
+  ]);
+  Logger.log('OK — gravado na planilha «' + ss.getName() + '», aba «' + sheet.getName() + '»');
 }
 
