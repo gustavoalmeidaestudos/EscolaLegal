@@ -139,6 +139,48 @@ export async function probeGoogleSheets() {
   }
 }
 
+export async function fetchVipRowsFromGoogleSheet() {
+  const spreadsheetId = normalizeSpreadsheetId(process.env.GOOGLE_SHEETS_ID);
+  const credentials = parseServiceAccount();
+  if (!spreadsheetId || !credentials) {
+    return { ok: false, reason: 'not_configured' };
+  }
+
+  const token = await getAccessToken(credentials);
+  const meta = await sheetsFetch(spreadsheetId, token, { method: 'GET' });
+  const tabName = pickTabName(meta);
+  const data = await sheetsFetch(
+    `${spreadsheetId}/values/${encodeURIComponent(tabName)}!A:J`,
+    token,
+    { method: 'GET' },
+  );
+
+  const rows = (data.values || []).map((cells, index) => ({
+    linha: index + 1,
+    dataHora: cells[0] || '',
+    nomeInstituicao: cells[1] || '',
+    cnpj: cells[2] || '',
+    responsavel: cells[3] || '',
+    cargo: cells[4] || '',
+    cidadeEstado: cells[5] || '',
+    email: cells[6] || '',
+    whatsapp: cells[7] || '',
+    interesse: cells[8] || '',
+    demanda: cells[9] || '',
+  }));
+
+  const header = rows[0] && /institui/i.test(rows[0].nomeInstituicao || '')
+    ? rows.slice(1)
+    : rows;
+
+  return {
+    ok: true,
+    spreadsheet: meta.properties?.title || spreadsheetId,
+    sheet: tabName,
+    rows: header.filter((r) => String(r.nomeInstituicao || r.email || r.whatsapp || '').trim()),
+  };
+}
+
 export async function appendVipRowToGoogleSheet(row) {
   const spreadsheetId = normalizeSpreadsheetId(process.env.GOOGLE_SHEETS_ID);
   const credentials = parseServiceAccount();

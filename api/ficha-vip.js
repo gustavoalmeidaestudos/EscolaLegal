@@ -15,7 +15,7 @@
 //   GOOGLE_SHEETS_ID              → ID da planilha (recomendado — grava direto, sem Apps Script)
 //   GOOGLE_SERVICE_ACCOUNT_JSON   → JSON da conta de serviço Google (cole inteiro em uma linha)
 
-import { appendVipRowToGoogleSheet, googleSheetsConfigured, probeGoogleSheets, getServiceAccountEmail } from './google-sheets.js';
+import { appendVipRowToGoogleSheet, googleSheetsConfigured, probeGoogleSheets, getServiceAccountEmail, fetchVipRowsFromGoogleSheet } from './google-sheets.js';
 
 async function readBody(req) {
 
@@ -420,6 +420,27 @@ export default async function handler(req, res) {
 
 
   if (req.method === 'GET') {
+
+    const exportKind = req.query?.export;
+    const exportKey = req.query?.key || req.headers['x-ficha-secret'] || '';
+    if (exportKind === 'cadastros' && secretSet && exportKey === process.env.FICHA_VIP_SECRET) {
+      if (!googleSheetsConfigured()) {
+        res.status(503).json({ ok: false, error: 'google_sheets_not_configured' });
+        return;
+      }
+      try {
+        const data = await fetchVipRowsFromGoogleSheet();
+        if (!data.ok) {
+          res.status(502).json({ ok: false, error: 'export_failed' });
+          return;
+        }
+        res.status(200).json({ ok: true, ...data });
+        return;
+      } catch (e) {
+        res.status(502).json({ ok: false, error: String(e.message || e) });
+        return;
+      }
+    }
 
     const health = {
 
