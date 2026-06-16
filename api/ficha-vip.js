@@ -326,6 +326,8 @@ async function pingWebhook(webhook) {
 
       detail: parsed.error || (parsed.ok === true ? 'ok' : text.slice(0, 160)),
 
+      parsed,
+
       problem: text.includes('accounts.google.com') || text.includes('signin')
         ? 'google_login_required'
         : (parsed.ok === true ? null : 'webhook_error'),
@@ -443,6 +445,10 @@ export default async function handler(req, res) {
       health.webhookStatus = ping.status;
 
       health.webhookProblem = ping.problem || null;
+
+      if (ping.parsed && ping.parsed.spreadsheet) {
+        health.spreadsheet = ping.parsed.spreadsheet;
+      }
 
       if (secretSet) {
         const probe = await probeWebhookSecret(webhook, process.env.FICHA_VIP_SECRET);
@@ -581,7 +587,11 @@ export default async function handler(req, res) {
 
 
 
-    res.status(200).json({ ok: true });
+    res.status(200).json({
+      ok: true,
+      sheet: parsed.sheet || null,
+      spreadsheet: parsed.spreadsheet || null,
+    });
 
   } catch (e) {
 

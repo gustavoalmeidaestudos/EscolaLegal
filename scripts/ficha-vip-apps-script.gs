@@ -10,6 +10,7 @@
 const SECRET = 'COLE_SEU_TOKEN_AQUI';
 
 const SHEET_NAME_VIP = 'Cadastros';
+const VIP_SHEET_CANDIDATES = ['Contatos', 'Cadastros'];
 const SHEET_NAME_ESCOLA_LEGAL = 'Escola-Legal';
 const BACKUP_MD_NAME = 'ficha-vip-backup.md';
 
@@ -58,7 +59,8 @@ function doGet(e) {
   return jsonResponse({
     ok: true,
     service: 'ficha-vip',
-    sheets: [SHEET_NAME_VIP, SHEET_NAME_ESCOLA_LEGAL],
+    sheets: VIP_SHEET_CANDIDATES.concat([SHEET_NAME_ESCOLA_LEGAL]),
+    spreadsheet: SpreadsheetApp.getActiveSpreadsheet().getName(),
     secretRequired: SECRET && SECRET !== 'COLE_SEU_TOKEN_AQUI',
   });
 }
@@ -94,7 +96,7 @@ function doPost(e) {
       return jsonResponse({ ok: true, sheet: SHEET_NAME_ESCOLA_LEGAL });
     }
 
-    const vipSheet = getOrCreateSheet_(SHEET_NAME_VIP, HEADERS_VIP);
+    const vipSheet = getVipSheet_();
     vipSheet.appendRow([
       payload.dataHora || new Date().toISOString(),
       payload.nomeInstituicao || '',
@@ -108,8 +110,19 @@ function doPost(e) {
       payload.demanda || '',
     ]);
 
-    appendMarkdownBackup_(payload);
-    return jsonResponse({ ok: true, sheet: SHEET_NAME_VIP });
+    try {
+      appendMarkdownBackup_(payload);
+    } catch (backupErr) {
+      // Não falha o cadastro se o backup .md no Drive der erro.
+    }
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    return jsonResponse({
+      ok: true,
+      sheet: vipSheet.getName(),
+      spreadsheet: ss.getName(),
+      spreadsheetUrl: ss.getUrl(),
+    });
   } catch (err) {
     return jsonResponse({ ok: false, error: String(err) });
   }
@@ -158,6 +171,15 @@ function appendMarkdownBackup_(payload) {
   } else {
     folder.createFile(BACKUP_MD_NAME, BACKUP_HEADER + entry, MimeType.PLAIN_TEXT);
   }
+}
+
+function getVipSheet_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  for (var i = 0; i < VIP_SHEET_CANDIDATES.length; i++) {
+    var existing = ss.getSheetByName(VIP_SHEET_CANDIDATES[i]);
+    if (existing) return existing;
+  }
+  return getOrCreateSheet_(SHEET_NAME_VIP, HEADERS_VIP);
 }
 
 function getOrCreateSheet_(sheetName, headers) {
