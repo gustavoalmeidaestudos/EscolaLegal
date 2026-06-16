@@ -67,6 +67,13 @@ async function getAccessToken(credentials) {
   return data.access_token;
 }
 
+function normalizeSpreadsheetId(value) {
+  const raw = String(value || '').trim();
+  const fromUrl = raw.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  if (fromUrl) return fromUrl[1];
+  return raw;
+}
+
 async function sheetsFetch(path, token, options = {}) {
   const res = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${path}`, {
     ...options,
@@ -77,6 +84,9 @@ async function sheetsFetch(path, token, options = {}) {
     },
   });
   const text = await res.text();
+  if (text.trimStart().startsWith('<!DOCTYPE') || text.trimStart().startsWith('<html')) {
+    throw new Error('Resposta invalida do Google Sheets. Confira GOOGLE_SHEETS_ID (so o ID, nao a URL inteira) e se a API esta ativada.');
+  }
   let parsed = {};
   try { parsed = JSON.parse(text); } catch (e) { parsed = { raw: text.slice(0, 200) }; }
   if (!res.ok) {
@@ -103,7 +113,7 @@ export function googleSheetsConfigured() {
 }
 
 export async function probeGoogleSheets() {
-  const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
+  const spreadsheetId = normalizeSpreadsheetId(process.env.GOOGLE_SHEETS_ID);
   const credentials = parseServiceAccount();
   if (!spreadsheetId || !credentials) {
     return { ok: false, problem: 'not_configured' };
@@ -130,7 +140,7 @@ export async function probeGoogleSheets() {
 }
 
 export async function appendVipRowToGoogleSheet(row) {
-  const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
+  const spreadsheetId = normalizeSpreadsheetId(process.env.GOOGLE_SHEETS_ID);
   const credentials = parseServiceAccount();
   if (!spreadsheetId || !credentials) {
     return { ok: false, reason: 'not_configured' };
