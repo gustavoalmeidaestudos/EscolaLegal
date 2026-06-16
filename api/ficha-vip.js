@@ -15,7 +15,7 @@
 //   GOOGLE_SHEETS_ID              → ID da planilha (recomendado — grava direto, sem Apps Script)
 //   GOOGLE_SERVICE_ACCOUNT_JSON   → JSON da conta de serviço Google (cole inteiro em uma linha)
 
-import { appendVipRowToGoogleSheet, googleSheetsConfigured } from './google-sheets.js';
+import { appendVipRowToGoogleSheet, googleSheetsConfigured, probeGoogleSheets, getServiceAccountEmail } from './google-sheets.js';
 
 async function readBody(req) {
 
@@ -429,6 +429,8 @@ export default async function handler(req, res) {
 
       googleSheetsConfigured: googleSheetsConfigured(),
 
+      googleSheetsServiceAccount: getServiceAccountEmail(),
+
       secretConfigured: secretSet,
 
       webhookReachable: false,
@@ -438,6 +440,20 @@ export default async function handler(req, res) {
       webhookDetail: null,
 
     };
+
+    if (googleSheetsConfigured()) {
+      const sheetsProbe = await probeGoogleSheets();
+      health.googleSheetsReachable = sheetsProbe.ok;
+      if (sheetsProbe.ok) {
+        health.spreadsheet = sheetsProbe.spreadsheet;
+        health.sheet = sheetsProbe.sheet;
+      } else {
+        health.googleSheetsProblem = sheetsProbe.problem;
+        health.googleSheetsDetail = sheetsProbe.detail;
+        health.googleSheetsFix = sheetsProbe.fix;
+        health.ok = false;
+      }
+    }
 
     if (webhook) {
 
@@ -571,6 +587,17 @@ export default async function handler(req, res) {
       } catch (e) {
         sheetsApiError = e;
         console.error('[ficha-vip] Google Sheets API', e);
+        const detail = String(e.message || e);
+        const emailed = await sendResendFallback(row);
+        const fix = /permission|denied|403/i.test(detail)
+          ? `Compartilhe a planilha com ${getServiceAccountEmail()} como Editor.`
+          : 'Confira GOOGLE_SHEETS_ID e GOOGLE_SERVICE_ACCOUNT_JSON no Vercel.';
+        if (emailed) {
+          res.status(200).json({ ok: true, storage: 'email', warning: 'sheets_api_failed', detail, fix });
+          return;
+        }
+        res.status(502).json({ ok: false, error: 'sheets_api_failed', detail, fix });
+        return;
       }
     }
 

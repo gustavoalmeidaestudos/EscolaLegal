@@ -21,8 +21,17 @@ function parseServiceAccount() {
   try {
     return JSON.parse(raw);
   } catch (e) {
-    return null;
+    try {
+      return JSON.parse(raw.replace(/\r?\n/g, '\\n'));
+    } catch (e2) {
+      return null;
+    }
   }
+}
+
+export function getServiceAccountEmail() {
+  const creds = parseServiceAccount();
+  return creds?.client_email || null;
 }
 
 async function getAccessToken(credentials) {
@@ -91,6 +100,33 @@ function SHEET_NAME_FALLBACK(titles) {
 
 export function googleSheetsConfigured() {
   return Boolean(process.env.GOOGLE_SHEETS_ID && parseServiceAccount());
+}
+
+export async function probeGoogleSheets() {
+  const spreadsheetId = process.env.GOOGLE_SHEETS_ID;
+  const credentials = parseServiceAccount();
+  if (!spreadsheetId || !credentials) {
+    return { ok: false, problem: 'not_configured' };
+  }
+  try {
+    const token = await getAccessToken(credentials);
+    const meta = await sheetsFetch(spreadsheetId, token, { method: 'GET' });
+    return {
+      ok: true,
+      spreadsheet: meta.properties?.title || spreadsheetId,
+      sheet: pickTabName(meta),
+      serviceAccount: credentials.client_email,
+    };
+  } catch (e) {
+    const msg = String(e.message || e);
+    let fix = null;
+    if (/permission|denied|403|404/i.test(msg)) {
+      fix = `Compartilhe a planilha com ${credentials.client_email} como Editor.`;
+    } else if (/token|jwt|invalid/i.test(msg)) {
+      fix = 'Confira GOOGLE_SERVICE_ACCOUNT_JSON no Vercel (JSON completo em uma linha).';
+    }
+    return { ok: false, problem: 'sheets_api_error', detail: msg, fix, serviceAccount: credentials.client_email };
+  }
 }
 
 export async function appendVipRowToGoogleSheet(row) {
