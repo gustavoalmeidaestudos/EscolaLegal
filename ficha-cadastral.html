@@ -123,6 +123,13 @@
     .btn-submit:hover:not(:disabled) { background: #001428; transform: translateY(-1px); }
     .btn-submit:disabled { opacity: 0.65; cursor: wait; }
 
+    .form-error {
+      display: none; margin-top: 12px; padding: 12px 14px; border-radius: 10px;
+      background: rgba(180, 40, 40, 0.08); border: 1px solid rgba(180, 40, 40, 0.25);
+      color: #8b1a1a; font-size: 14px; font-weight: 600; line-height: 1.45;
+    }
+    .form-error.is-visible { display: block; }
+
     .footer-banner {
       margin-top: 2rem; background: #001D3D; border-radius: 0 0 16px 16px;
       padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 14px;
@@ -291,6 +298,8 @@
           Enviar cadastro
         </button>
 
+        <p class="form-error" id="form-error" role="alert"></p>
+
         <p class="text-center text-gray-muted text-[12px] mt-4 flex items-center justify-center gap-1.5 font-medium">
           <i data-lucide="lock" style="width:13px;height:13px;"></i>
           Seus dados são confidenciais e usados apenas para contato da nossa equipe.
@@ -340,7 +349,19 @@
     };
 
     // Mesmo token definido no Vercel (FICHA_VIP_SECRET), se usar
-    const FICHA_API_SECRET = '';
+    const formError = document.getElementById('form-error');
+
+    function showFormError(msg) {
+      if (!formError) return;
+      formError.textContent = msg;
+      formError.classList.add('is-visible');
+    }
+
+    function clearFormError() {
+      if (!formError) return;
+      formError.textContent = '';
+      formError.classList.remove('is-visible');
+    }
 
     const form = document.getElementById('ficha-form');
     const formView = document.getElementById('form-view');
@@ -395,27 +416,47 @@
 
       btnSubmit.disabled = true;
       btnSubmit.textContent = 'Enviando…';
+      clearFormError();
 
       let saved = false;
+      let errorCode = '';
       try {
-        const headers = { 'Content-Type': 'application/json' };
-        if (FICHA_API_SECRET) headers['X-Ficha-Secret'] = FICHA_API_SECRET;
-
         const r = await fetch('/api/ficha-vip', {
           method: 'POST',
-          headers,
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
         });
         saved = r.ok;
+        if (!saved) {
+          try {
+            const err = await r.json();
+            errorCode = err.error || ('http_' + r.status);
+          } catch (e) {
+            errorCode = 'http_' + r.status;
+          }
+        }
       } catch (err) {
         console.warn('[ficha-vip] API indisponível', err);
+        errorCode = 'network';
       }
 
       if (!saved) {
-        await sendNotificationEmail(data);
+        const emailed = await sendNotificationEmail(data);
+        if (emailed) {
+          showSuccess(data.email, true);
+        } else if (errorCode === 'storage_not_configured') {
+          showFormError('Cadastro não foi gravado: a planilha ainda não está configurada no servidor. Avise a equipe da Dra. Deliane.');
+        } else if (errorCode === 'webhook_failed') {
+          showFormError('Não foi possível gravar na planilha. Verifique se o Google Apps Script está implantado e tente novamente.');
+        } else {
+          showFormError('Não foi possível concluir o cadastro agora. Tente novamente em instantes ou fale conosco pelo WhatsApp.');
+        }
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = 'Enviar cadastro';
+        return;
       }
 
-      showSuccess(data.email);
+      showSuccess(data.email, false);
       btnSubmit.disabled = false;
       btnSubmit.textContent = 'Enviar cadastro';
     });
@@ -441,11 +482,12 @@
       }
     }
 
-    function showSuccess(email) {
+    function showSuccess(email, viaEmailOnly) {
       formView.classList.add('is-hidden');
       successView.classList.add('is-visible');
-      document.getElementById('success-email-text').textContent =
-        'Confirmação enviada para ' + email + '.';
+      document.getElementById('success-email-text').textContent = viaEmailOnly
+        ? 'Recebemos seus dados por e-mail. Nossa equipe entrará em contato em ' + email + '.'
+        : 'Confirmação registrada para ' + email + '.';
       window.scrollTo({ top: 0, behavior: 'smooth' });
       lucide.createIcons();
     }

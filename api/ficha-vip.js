@@ -24,7 +24,7 @@ function clean(value, max = 500) {
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Ficha-Secret');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
     res.status(204).end();
@@ -36,14 +36,8 @@ export default async function handler(req, res) {
     return;
   }
 
-  const secret = process.env.FICHA_VIP_SECRET;
-  if (secret) {
-    const header = req.headers['x-ficha-secret'];
-    if (header !== secret) {
-      res.status(403).json({ ok: false, error: 'forbidden' });
-      return;
-    }
-  }
+  // O SECRET fica só no servidor (Vercel → Google Sheets). O formulário no navegador não envia token.
+  const secret = process.env.FICHA_VIP_SECRET || '';
 
   const body = await readBody(req);
   const row = {

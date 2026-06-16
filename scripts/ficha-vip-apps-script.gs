@@ -50,8 +50,8 @@ function doPost(e) {
   try {
     const payload = JSON.parse(e.postData.contents || '{}');
 
-    if (SECRET && payload.secret !== SECRET) {
-      return jsonResponse({ ok: false, error: 'forbidden' }, 403);
+    if (SECRET && SECRET !== 'COLE_SEU_TOKEN_AQUI' && payload.secret !== SECRET) {
+      return jsonResponse({ ok: false, error: 'forbidden' });
     }
 
     const sheet = getSheet_();
