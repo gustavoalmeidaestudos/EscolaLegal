@@ -398,7 +398,7 @@
 
       const interesse = form.querySelector('input[name="interesse"]:checked');
       if (!interesse) {
-        form.querySelector('input[name="interesse"]').reportValidity();
+        showFormError('Selecione uma opção em Interesse para continuar.');
         return;
       }
 
@@ -419,6 +419,7 @@
       clearFormError();
 
       let saved = false;
+      let viaEmailOnly = false;
       let errorCode = '';
       try {
         const r = await fetch('/api/ficha-vip', {
@@ -426,15 +427,13 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
         });
-        saved = r.ok;
+        let payload = {};
+        try { payload = await r.json(); } catch (e) { payload = {}; }
+        saved = r.ok && payload.ok !== false;
+        viaEmailOnly = saved && payload.storage === 'email';
         if (!saved) {
-          try {
-            const err = await r.json();
-            errorCode = err.error || ('http_' + r.status);
-            if (err.detail) console.warn('[ficha-vip]', err.detail);
-          } catch (e) {
-            errorCode = 'http_' + r.status;
-          }
+          errorCode = payload.error || ('http_' + r.status);
+          if (payload.detail) console.warn('[ficha-vip]', payload.detail);
         }
       } catch (err) {
         console.warn('[ficha-vip] API indisponível', err);
@@ -442,34 +441,24 @@
       }
 
       if (!saved) {
-        let detail = '';
-        try {
-          const errBody = await (async () => {
-            const r2 = await fetch('/api/ficha-vip', { method: 'GET' });
-            return r2.ok ? r2.json() : {};
-          })();
-          if (errBody && !errBody.webhookReachable) {
-            detail = errBody.webhookDetail ? ' (' + String(errBody.webhookDetail).slice(0, 80) + ')' : '';
-          }
-        } catch (e) { /* ignore */ }
-
-        await sendNotificationEmail(data);
-
-        if (errorCode === 'storage_not_configured') {
+        const emailed = await sendNotificationEmail(data);
+        if (emailed) {
+          showSuccess(data.email, true);
+        } else if (errorCode === 'storage_not_configured') {
           showFormError('Cadastro não foi gravado: a planilha ainda não está configurada no servidor. Avise a equipe da Dra. Deliane.');
         } else if (errorCode === 'secret_mismatch') {
           showFormError('Não foi possível gravar na planilha: o token SECRET do Google Apps Script não confere com o do Vercel. Ajuste os dois para o mesmo valor e implante de novo.');
         } else if (errorCode === 'webhook_failed') {
-          showFormError('Não foi possível gravar na planilha. Confira se o Apps Script foi implantado como App da Web (acesso: Qualquer pessoa) e se a URL no Vercel termina em /exec.' + detail);
-        } else {
           showFormError('Não foi possível gravar na planilha agora. Tente novamente em instantes ou fale conosco pelo WhatsApp.');
+        } else {
+          showFormError('Não foi possível concluir o cadastro agora. Tente novamente em instantes ou fale conosco pelo WhatsApp.');
         }
         btnSubmit.disabled = false;
         btnSubmit.textContent = 'Enviar cadastro';
         return;
       }
 
-      showSuccess(data.email, false);
+      showSuccess(data.email, viaEmailOnly);
       btnSubmit.disabled = false;
       btnSubmit.textContent = 'Enviar cadastro';
     });

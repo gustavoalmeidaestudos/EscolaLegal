@@ -190,6 +190,68 @@ async function appendGithubMarkdownBackup(row) {
 
 
 
+function resendApiKey() {
+  return process.env.RESEND_API_KEY || process.env.RESEND_API;
+}
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+async function sendResendFallback(row) {
+  const key = resendApiKey();
+  if (!key) return false;
+
+  const to = process.env.EMAIL_CC || process.env.FICHA_VIP_FALLBACK_EMAIL || 'dra.delianesantosadv@gmail.com';
+  const from = process.env.RESEND_FROM || 'Ficha VIP <onboarding@resend.dev>';
+
+  const rows = [
+    ['Instituição', row.nomeInstituicao],
+    ['CNPJ', row.cnpj],
+    ['Responsável', row.responsavel],
+    ['Cargo', row.cargo],
+    ['Cidade/Estado', row.cidadeEstado],
+    ['E-mail', row.email],
+    ['WhatsApp', row.whatsapp],
+    ['Interesse', row.interesse],
+    ['Demanda', row.demanda || '—'],
+    ['Data/Hora', row.dataHora],
+  ];
+
+  const table = rows.map(([label, value]) =>
+    `<tr><td style="padding:8px 12px;font-weight:700;border:1px solid #ddd;">${escapeHtml(label)}</td>` +
+    `<td style="padding:8px 12px;border:1px solid #ddd;">${escapeHtml(value)}</td></tr>`
+  ).join('');
+
+  const html =
+    `<h2 style="color:#001D3D;">Novo cadastro — Ficha VIP</h2>` +
+    `<p>Planilha indisponível no momento. Cadastro salvo por e-mail de contingência.</p>` +
+    `<table style="border-collapse:collapse;width:100%;max-width:640px;">${table}</table>`;
+
+  try {
+    const { Resend } = await import('resend');
+    const resend = new Resend(key);
+    const { error } = await resend.emails.send({
+      from,
+      to: [to],
+      subject: `Ficha VIP — ${row.nomeInstituicao}`,
+      html,
+    });
+    if (error) {
+      console.error('[ficha-vip] Resend fallback', error);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.error('[ficha-vip] Resend fallback', e);
+    return false;
+  }
+}
+
 async function pingWebhook(webhook) {
 
   try {
@@ -375,25 +437,22 @@ export default async function handler(req, res) {
 
 
     if (!r.ok || parsed.ok !== true) {
-
       const detail = parsed.error || parsed.raw || `http_${r.status}`;
-
       console.error('[ficha-vip] Webhook falhou', r.status, detail);
 
+      const emailed = await sendResendFallback(row);
+      if (emailed) {
+        res.status(200).json({ ok: true, storage: 'email' });
+        return;
+      }
+
       res.status(502).json({
-
         ok: false,
-
         error: detail === 'forbidden' ? 'secret_mismatch' : 'webhook_failed',
-
         detail,
-
         googleStatus: r.status,
-
       });
-
       return;
-
     }
 
 
