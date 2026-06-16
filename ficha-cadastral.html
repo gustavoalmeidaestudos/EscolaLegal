@@ -348,6 +348,14 @@
       templateId: 'template_1bijs0w',
     };
 
+    const API_ORIGIN = (function () {
+      const host = window.location.hostname;
+      if (!host || window.location.protocol === 'file:' || host === 'localhost' || host === '127.0.0.1') {
+        return 'https://escolalegal.vercel.app';
+      }
+      return '';
+    })();
+
     // Mesmo token definido no Vercel (FICHA_VIP_SECRET), se usar
     const formError = document.getElementById('form-error');
 
