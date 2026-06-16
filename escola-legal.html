@@ -163,14 +163,21 @@
       padding: 11px 14px;
     }
     .contract-preview__body {
-      max-height: 260px; overflow-y: auto; padding: 14px;
-      font-size: 13px; line-height: 1.6; color: #3D4550;
+      max-height: 420px; overflow-y: auto; padding: 14px 16px;
+      font-size: 13px; line-height: 1.65; color: #3D4550;
     }
     .contract-preview__body h3 {
-      margin: 0 0 10px; color: #001D3D; font-size: 14px; font-weight: 900;
+      margin: 0 0 12px; color: #001D3D; font-size: 14px; font-weight: 900;
+      text-align: center; line-height: 1.35;
     }
     .contract-preview__body p { margin: 0 0 8px; }
-    .contract-preview__body .clause { margin-top: 10px; font-size: 12px; font-weight: 900; color: #001D3D; }
+    .contract-preview__body .clause {
+      margin: 14px 0 6px; font-size: 12px; font-weight: 900; color: #001D3D;
+      letter-spacing: 0.04em; text-transform: uppercase;
+    }
+    .contract-preview__body .field { font-weight: 900; color: #001D3D; }
+    .contract-preview__body ul { margin: 0 0 8px 18px; padding: 0; }
+    .contract-preview__body li { margin-bottom: 6px; }
 
     .btn-primary {
       width: 100%; padding: 16px 24px; background: #001D3D; color: #FAF9F6;
@@ -389,7 +396,7 @@
           </li>
           <li class="flex gap-3 items-start">
             <span class="w-7 h-7 rounded-full bg-gold/15 text-gold-dark flex items-center justify-center shrink-0 font-black text-sm">2</span>
-            <p class="text-[15px] text-navy font-medium leading-snug m-0">Assine o contrato na tela (dedo ou caneta).</p>
+            <p class="text-[15px] text-navy font-medium leading-snug m-0">Leia o contrato completo, assine na tela (dedo ou caneta).</p>
           </li>
           <li class="flex gap-3 items-start">
             <span class="w-7 h-7 rounded-full bg-gold/15 text-gold-dark flex items-center justify-center shrink-0 font-black text-sm">3</span>
@@ -701,33 +708,79 @@
       emailjs.init({ publicKey: EMAIL_CONFIG.publicKey, blockHeadless: false });
     }
 
-    function previewValue(v, fallback) {
-      const value = (v || '').trim();
-      return value || fallback;
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function buildContractPreviewHtml(data) {
+      const inst = escapeHtml(data.nomeInstituicao || '________________________________');
+      const cnpj = escapeHtml(data.cnpj || '__.___.___/____-__');
+      const resp = escapeHtml(data.responsavel || '________________________________');
+      const cpf = escapeHtml(data.cpf || '___.___.___-__');
+      const end = escapeHtml(data.endereco || '________________________________');
+      const hoje = new Date().toLocaleDateString('pt-BR', {
+        day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Sao_Paulo',
+      });
+
+      return (
+        '<h3>CONTRATO DE PRESTAÇÃO DE SERVIÇOS JURÍDICOS<br>PROGRAMA ESCOLA LEGAL</h3>' +
+        '<p><strong>CONTRATANTE</strong></p>' +
+        '<p>Instituição: <span class="field">' + inst + '</span><br>' +
+        'CNPJ nº <span class="field">' + cnpj + '</span><br>' +
+        'Endereço: <span class="field">' + end + '</span><br>' +
+        'Representante: <span class="field">' + resp + '</span><br>' +
+        'CPF nº <span class="field">' + cpf + '</span></p>' +
+        '<p><strong>CONTRATADA</strong></p>' +
+        '<p>DELIANE SANTOS SOCIEDADE INDIVIDUAL DE ADVOCACIA, CNPJ nº 30.411.893/0001-29, OAB/SP nº 25.929, ' +
+        'com sede em São Paulo, na Avenida Paulista, 1471, conj. 511, sala 02 — Bela Vista — CEP 01.311-927/SP, ' +
+        'neste ato representada por Deliane Jesus dos Santos, OAB/SP 343.994.</p>' +
+        '<p>CONTRATANTE e CONTRATADA, doravante denominadas em conjunto "Partes" e, individualmente, "Parte".</p>' +
+        '<p class="clause">1. Objeto</p>' +
+        '<p>Prestação de Serviço Jurídico, com assessoria completa, conforme descrito em Ordem de Serviço, anexo I deste Contrato, com todas as suas especificações.</p>' +
+        '<p class="clause">2. Vigência e rescisão</p>' +
+        '<p>O presente Contrato tem o prazo de <strong>12 (doze) meses</strong>, com início na data de sua assinatura, renovando-se de forma automática a cada ano, salvo manifestação em contrário de qualquer das Partes.</p>' +
+        '<p class="clause">3. Valor e forma de pagamento</p>' +
+        '<p>O valor a ser pago pela prestação de serviço será de <strong>R$ 1.740,00 (mil setecentos e quarenta reais)</strong> mensais.</p>' +
+        '<p>O pagamento da adesão/primeira mensalidade deverá ser realizado na data da assinatura do presente Contrato, e as demais até o <strong>dia 10 (dez)</strong> de cada mês.</p>' +
+        '<p>O pagamento será realizado de preferência por transferência via PIX na conta corrente de titularidade da Contratada, chave: CNPJ nº 30.411.893/0001-29 — NUBANK.</p>' +
+        '<p class="clause">4. Obrigações das Partes</p>' +
+        '<p><strong>Da CONTRATANTE:</strong></p>' +
+        '<ul>' +
+        '<li>Efetuar o pagamento no prazo e conforme combinados, sob pena de <strong>multa de 10% (dez por cento)</strong> e <strong>juros de 10% (dez por cento) ao mês</strong>, e, após o 2º mês de inadimplência, o vencimento antecipado de todas as demais mensalidades vincendas.</li>' +
+        '<li>Oferecer as informações necessárias para que a Contratada possa executar os serviços previstos neste Contrato.</li>' +
+        '</ul>' +
+        '<p><strong>Da CONTRATADA:</strong></p>' +
+        '<ul>' +
+        '<li>Executar os serviços previstos neste Contrato com zelo, ética profissional e responsabilidade.</li>' +
+        '<li>Manter a confidencialidade das informações fornecidas pela Contratante.</li>' +
+        '<li>Cumprir com diligência todos os serviços contratados na Proposta deste Contrato.</li>' +
+        '</ul>' +
+        '<p class="clause">5. Descumprimento das obrigações</p>' +
+        '<p>Em caso de descumprimento de qualquer cláusula deste Contrato, a Parte infratora deverá pagar uma <strong>multa no valor de R$ 5.000,00 (cinco mil reais)</strong> para a Parte prejudicada, no prazo de <strong>15 (quinze) dias</strong>.</p>' +
+        '<p class="clause">6. Ausência de vínculo</p>' +
+        '<p>Este Contrato não estabelece vínculo empregatício ou de representação entre as Partes, de forma que cada uma será responsável por suas próprias obrigações (tributárias, previdenciárias e trabalhistas) e não poderão representar a outra em qualquer negócio jurídico.</p>' +
+        '<p class="clause">7. Foro</p>' +
+        '<p>Caso surjam conflitos relacionados a este contrato, fica eleito o foro da Comarca da Cidade de São Paulo, Estado de São Paulo, com exclusão de qualquer outro, por mais privilegiado que seja.</p>' +
+        '<p style="margin-top:14px">São Paulo, <span class="field">' + hoje + '</span>.</p>'
+      );
     }
 
     function updateContractPreview() {
       if (!contractPreviewBody) return;
-      const instituicao = previewValue(form.nomeInstituicao.value, '________________________________');
-      const cnpj = previewValue(form.cnpj.value, '__.___.___/____-__');
-      const responsavel = previewValue(form.responsavel.value, '________________________________');
-      const endereco = previewValue(form.endereco.value, '________________________________');
-
-      contractPreviewBody.innerHTML =
-        '<h3>CONTRATO DE PRESTACAO DE SERVICOS - ESCOLA LEGAL</h3>' +
-        '<p><strong>CONTRATANTE:</strong> ' + instituicao + ', CNPJ ' + cnpj + ', com endereco em ' + endereco + ', representada por ' + responsavel + '.</p>' +
-        '<p><strong>CONTRATADA:</strong> Deliane Santos Advocacia Educacional, OAB/SP 343.994.</p>' +
-        '<p class="clause">CLAUSULA 1 - OBJETO</p>' +
-        '<p>Prestacao de assessoria juridica educacional continuada para a instituicao contratante.</p>' +
-        '<p class="clause">CLAUSULA 2 - VALOR E PAGAMENTO</p>' +
-        '<p>Valor mensal de R$ 1.740,00, vencimento todo dia 10.</p>' +
-        '<p class="clause">CLAUSULA 3 - VIGENCIA</p>' +
-        '<p>Vigencia de 12 meses, renovavel por acordo entre as partes.</p>' +
-        '<p class="clause">CLAUSULA 4 - FORO</p>' +
-        '<p>Fica eleito o foro da Comarca de Sao Paulo/SP.</p>';
+      contractPreviewBody.innerHTML = buildContractPreviewHtml({
+        nomeInstituicao: form.nomeInstituicao.value,
+        cnpj: form.cnpj.value,
+        responsavel: form.responsavel.value,
+        cpf: form.cpf.value,
+        endereco: form.endereco.value,
+      });
     }
 
-    ['nomeInstituicao', 'cnpj', 'responsavel', 'endereco'].forEach(function (id) {
+    ['nomeInstituicao', 'cnpj', 'responsavel', 'cpf', 'endereco'].forEach(function (id) {
       const input = document.getElementById(id);
       if (input) input.addEventListener('input', updateContractPreview);
     });
