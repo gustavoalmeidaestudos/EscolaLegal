@@ -422,6 +422,29 @@ async function sendContratoEmails(body, pdfBuffer, filename) {
   return { clientSent, officeCopySent, mailData };
 }
 
+async function postToGoogleWebhook(webhook, payload) {
+  const body = JSON.stringify(payload);
+  const headers = {
+    'Content-Type': 'application/json',
+    'Content-Length': String(Buffer.byteLength(body, 'utf8')),
+  };
+  let currentUrl = webhook;
+  for (let i = 0; i < 5; i++) {
+    const response = await fetch(currentUrl, { method: 'POST', headers, body, redirect: 'manual' });
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get('location');
+      if (!location) break;
+      currentUrl = location.startsWith('http') ? location : new URL(location, currentUrl).href;
+      continue;
+    }
+    const text = await response.text();
+    let parsed = {};
+    try { parsed = JSON.parse(text); } catch (e) { parsed = {}; }
+    return { response, parsed };
+  }
+  return { response: null, parsed: {} };
+}
+
 async function storeEscolaLegalLead(body, meta = {}) {
   const webhook = process.env.ESCOLA_LEGAL_WEBHOOK_URL || process.env.FICHA_VIP_WEBHOOK_URL;
   if (!webhook) return { ok: false, reason: 'missing_webhook' };
@@ -443,16 +466,8 @@ async function storeEscolaLegalLead(body, meta = {}) {
   };
 
   try {
-    const response = await fetch(webhook, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-      redirect: 'follow',
-    });
-    const text = await response.text();
-    let parsed = {};
-    try { parsed = JSON.parse(text); } catch (e) { parsed = {}; }
-    return { ok: response.ok && parsed.ok === true };
+    const { response, parsed } = await postToGoogleWebhook(webhook, payload);
+    return { ok: response && response.ok && parsed.ok === true };
   } catch (err) {
     console.error('[contrato][sheet]', err);
     return { ok: false, reason: 'request_failed' };

@@ -252,11 +252,39 @@ async function sendResendFallback(row) {
   }
 }
 
+async function fetchWithRedirects(url, options = {}, maxRedirects = 5) {
+  let currentUrl = url;
+  for (let i = 0; i < maxRedirects; i++) {
+    const r = await fetch(currentUrl, { ...options, redirect: 'manual' });
+    if (r.status >= 300 && r.status < 400) {
+      const location = r.headers.get('location');
+      if (!location) return r;
+      currentUrl = location.startsWith('http') ? location : new URL(location, currentUrl).href;
+      continue;
+    }
+    return r;
+  }
+  throw new Error('too_many_redirects');
+}
+
+async function postToWebhook(webhook, payload) {
+  const body = JSON.stringify(payload);
+  const headers = {
+    'Content-Type': 'application/json',
+    'Content-Length': String(Buffer.byteLength(body, 'utf8')),
+  };
+  const r = await fetchWithRedirects(webhook, { method: 'POST', headers, body });
+  const text = await r.text();
+  let parsed = {};
+  try { parsed = JSON.parse(text); } catch (e) { parsed = { raw: text.slice(0, 300) }; }
+  return { r, parsed };
+}
+
 async function pingWebhook(webhook) {
 
   try {
 
-    const r = await fetch(webhook, { method: 'GET', redirect: 'follow' });
+    const r = await fetchWithRedirects(webhook, { method: 'GET' });
 
     const text = await r.text();
 
@@ -416,25 +444,7 @@ export default async function handler(req, res) {
 
   try {
 
-    const r = await fetch(webhook, {
-
-      method: 'POST',
-
-      headers: { 'Content-Type': 'application/json' },
-
-      body: JSON.stringify({ secret, ...row }),
-
-      redirect: 'follow',
-
-    });
-
-    const text = await r.text();
-
-    let parsed = {};
-
-    try { parsed = JSON.parse(text); } catch (e) { parsed = { raw: text.slice(0, 300) }; }
-
-
+    const { r, parsed } = await postToWebhook(webhook, { secret, ...row });
 
     if (!r.ok || parsed.ok !== true) {
       const detail = parsed.error || parsed.raw || `http_${r.status}`;
