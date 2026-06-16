@@ -21,7 +21,9 @@ Logo/Cópia*
 # Sistema operacional
 .DS_Store
 Thumbs.db
-.env*
+# Backup local das fichas cadastral (dados pessoais — não publicar em repositório público)
+backups/ficha-vip-cadastros.md
+
 # PDFs de teste local
 Contrato/test-*.pdf
 
