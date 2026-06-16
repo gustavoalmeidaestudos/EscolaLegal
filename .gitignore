@@ -23,6 +23,7 @@ Logo/Cópia*
 Thumbs.db
 # Backup local das fichas cadastral (dados pessoais — não publicar em repositório público)
 backups/ficha-vip-cadastros.md
+contatos/
 
 # PDFs de teste local
 Contrato/test-*.pdf
