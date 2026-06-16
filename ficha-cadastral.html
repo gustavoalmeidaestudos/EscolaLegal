@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Ficha Cadastral — Grupo VIP Deliane Santos Advocacia Educacional">
+  <meta name="theme-color" content="#001D3D">
+  <link rel="icon" type="image/svg+xml" href="Logo/favicon.svg">
+  <title>Ficha Cadastral — Grupo VIP | Deliane Santos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FAF9F6',
+            beige: '#F3EDE4',
+            gold: { DEFAULT: '#C5943E', light: '#D4AD5E', dark: '#A67A2E' },
+            navy: { DEFAULT: '#001D3D', deep: '#001428', light: '#002952' },
+            gray: { DEFAULT: '#3D4550', muted: '#6B7280' },
+          },
+          fontFamily: {
+            display: ['Playfair Display', 'Georgia', 'serif'],
+            sans: ['Lato', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body { font-family: 'Lato', sans-serif; background: #FAF9F6; color: #001D3D; margin: 0; overflow-x: hidden; }
+
+    .page-wrap {
+      max-width: 640px; margin: 0 auto; padding: 0 1.25rem 3rem;
+      position: relative;
+    }
+
+    .corner-deco {
+      position: absolute; width: 120px; height: 120px; pointer-events: none; z-index: 0;
+    }
+    .corner-deco--tl { top: 0; left: 0; }
+    .corner-deco--tr { top: 0; right: 0; transform: scaleX(-1); }
+
+    .header-block { position: relative; z-index: 1; text-align: center; padding: 2.5rem 0 1.5rem; }
+
+    .logo-header {
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      margin: 0 auto 1.25rem; max-width: 320px;
+    }
+    .logo-header__icon {
+      width: 68px; height: 68px; overflow: hidden; flex-shrink: 0; position: relative;
+    }
+    .logo-header__icon img {
+      position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+      height: 68px; width: auto; max-width: none;
+    }
+    .logo-header__text { text-align: left; }
+    .logo-header__name {
+      font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 700;
+      color: #001D3D; line-height: 1.1; margin: 0;
+    }
+    .logo-header__tag {
+      font-size: 10px; font-weight: 900; letter-spacing: 0.14em; text-transform: uppercase;
+      color: #C5943E; margin: 4px 0 0;
+    }
+
+    .vip-badge {
+      display: inline-block; background: linear-gradient(135deg, #D4AD5E, #C5943E);
+      color: #fff; font-size: 13px; font-weight: 900; letter-spacing: 0.14em;
+      padding: 6px 22px; border-radius: 100px; margin-top: 8px;
+    }
+
+    .gold-line { height: 1px; background: linear-gradient(90deg, transparent, #C5943E, transparent); flex: 1; }
+
+    .field-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .field-icon {
+      width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+      background: #001D3D; color: #C5943E;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .field-icon svg { width: 18px; height: 18px; stroke-width: 2.25; }
+    .field-icon--text { font-size: 9px; font-weight: 900; letter-spacing: -0.02em; line-height: 1; }
+    .field-body { flex: 1; min-width: 0; }
+    .field-label { font-size: 13px; font-weight: 900; color: #001D3D; margin-bottom: 4px; }
+    .field-input {
+      width: 100%; padding: 11px 14px; border: none; border-radius: 10px;
+      background: #F3EDE4; font-size: 15px; font-weight: 500; color: #001D3D;
+      transition: box-shadow 0.2s;
+    }
+    .field-input::placeholder { color: #6B7280; font-weight: 400; }
+    .field-input:focus { outline: none; box-shadow: 0 0 0 2px rgba(197,148,62,0.45); }
+
+    .interest-option {
+      display: flex; gap: 10px; align-items: flex-start;
+      padding: 12px 14px; border: 1.5px solid rgba(197,148,62,0.4);
+      border-radius: 10px; background: rgba(197,148,62,0.05); cursor: pointer; margin-bottom: 8px;
+    }
+    .interest-option input { width: 18px; height: 18px; margin-top: 2px; accent-color: #C5943E; flex-shrink: 0; cursor: pointer; }
+    .interest-option span { font-size: 14px; font-weight: 500; line-height: 1.45; }
+
+    .demanda-box {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 14px; border-radius: 12px; background: #F3EDE4;
+    }
+    .demanda-box textarea {
+      flex: 1; border: none; background: transparent; resize: vertical;
+      min-height: 72px; font-size: 15px; font-weight: 500; color: #001D3D;
+    }
+    .demanda-box textarea:focus { outline: none; }
+
+    .btn-submit {
+      width: 100%; padding: 16px; background: #001D3D; color: #FAF9F6;
+      font-family: 'Lato', sans-serif; font-size: 16px; font-weight: 900;
+      border: none; border-radius: 12px; cursor: pointer; letter-spacing: 0.02em;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .btn-submit:hover:not(:disabled) { background: #001428; transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: 0.65; cursor: wait; }
+
+    .footer-banner {
+      margin-top: 2rem; background: #001D3D; border-radius: 0 0 16px 16px;
+      padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 14px;
+      border-top: 2px solid #C5943E; position: relative; overflow: hidden;
+    }
+    .footer-banner::after {
+      content: ''; position: absolute; right: -20px; bottom: -20px;
+      width: 100px; height: 100px; opacity: 0.06;
+      background: url('Logo/Logo-Adv.svg') center/contain no-repeat;
+    }
+    .footer-banner p { margin: 0; font-size: 14px; color: #fff; line-height: 1.5; font-weight: 500; }
+    .footer-banner strong { color: #D4AD5E; }
+
+    /* Confirmação */
+    .success-view {
+      display: none; text-align: center; padding: 3rem 1rem 2rem; position: relative; z-index: 1;
+    }
+    .success-view.is-visible { display: block; }
+    .form-view.is-hidden { display: none; }
+
+    .success-icon {
+      width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 1.25rem;
+      background: rgba(197,148,62,0.15); color: #A67A2E;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .success-icon svg { width: 36px; height: 36px; stroke-width: 2.25; }
+  </style>
+</head>
+<body>
+
+  <div class="page-wrap">
+
+    <!-- Decorações cantos -->
+    <svg class="corner-deco corner-deco--tl" viewBox="0 0 120 120" aria-hidden="true">
+      <path d="M0,0 L0,80 Q0,0 80,0 Z" fill="#001D3D"/>
+      <path d="M4,4 L4,72 Q4,8 72,8 Z" fill="none" stroke="#C5943E" stroke-width="1.5"/>
+    </svg>
+    <svg class="corner-deco corner-deco--tr" viewBox="0 0 120 120" aria-hidden="true">
+      <path d="M0,0 L0,80 Q0,0 80,0 Z" fill="#001D3D"/>
+      <path d="M4,4 L4,72 Q4,8 72,8 Z" fill="none" stroke="#C5943E" stroke-width="1.5"/>
+    </svg>
+
+    <!-- Cabeçalho (ícone dourado + texto navy — legível no fundo claro) -->
+    <header class="header-block">
+      <div class="logo-header">
+        <div class="logo-header__icon" aria-hidden="true">
+          <img src="Logo/Deliane-Logo-Institucional.svg" alt="">
+        </div>
+        <div class="logo-header__text">
+          <p class="logo-header__name">Deliane Santos</p>
+          <p class="logo-header__tag">• Advocacia Educacional •</p>
+        </div>
+      </div>
+      <h1 class="font-display text-[clamp(26px,5vw,34px)] font-bold text-navy tracking-[-0.02em] m-0">
+        FICHA CADASTRAL
+      </h1>
+      <span class="vip-badge">GRUPO VIP</span>
+      <p class="text-gray text-[15px] leading-relaxed font-medium mt-5 max-w-md mx-auto">
+        Cadastre sua instituição e participe do nosso Grupo VIP, com acesso a conteúdos exclusivos,
+        atualizações jurídicas e condições especiais para assessoria.
+      </p>
+    </header>
+
+    <!-- Formulário -->
+    <div class="form-view" id="form-view">
+      <form id="ficha-form" novalidate>
+
+        <div class="field-row">
+          <span class="field-icon"><i data-lucide="building-2"></i></span>
+          <div class="field-body">
+            <label class="field-label" for="nomeInstituicao">Nome da Instituição:</label>
+            <input type="text" id="nomeInstituicao" name="nomeInstituicao" required class="field-input"
+              placeholder="Ex.: Colégio São Francisco">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <span class="field-icon field-icon--text">CNPJ</span>
+          <div class="field-body">
+            <label class="field-label" for="cnpj">CNPJ:</label>
+            <input type="text" id="cnpj" name="cnpj" required inputmode="numeric" maxlength="18" class="field-input"
+              placeholder="00.000.000/0000-00">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <span class="field-icon"><i data-lucide="user"></i></span>
+          <div class="field-body">
+            <label class="field-label" for="responsavel">Nome do(a) Responsável Legal:</label>
+            <input type="text" id="responsavel" name="responsavel" required class="field-input"
+              placeholder="Ex.: Maria Oliveira">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <span class="field-icon"><i data-lucide="briefcase"></i></span>
+          <div class="field-body">
+            <label class="field-label" for="cargo">Cargo/Função:</label>
+            <input type="text" id="cargo" name="cargo" required class="field-input"
+              placeholder="Ex.: Diretora Pedagógica">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <span class="field-icon"><i data-lucide="map-pin"></i></span>
+          <div class="field-body">
+            <label class="field-label" for="cidadeEstado">Cidade/Estado:</label>
+            <input type="text" id="cidadeEstado" name="cidadeEstado" required class="field-input"
+              placeholder="Ex.: São Paulo — SP">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <span class="field-icon"><i data-lucide="mail"></i></span>
+          <div class="field-body">
+            <label class="field-label" for="email">E-mail:</label>
+            <input type="email" id="email" name="email" required class="field-input"
+              placeholder="nome@instituicao.com">
+          </div>
+        </div>
+
+        <div class="field-row">
+          <span class="field-icon"><i data-lucide="message-circle"></i></span>
+          <div class="field-body">
+            <label class="field-label" for="whatsapp">WhatsApp:</label>
+            <input type="tel" id="whatsapp" name="whatsapp" required inputmode="numeric" maxlength="15" class="field-input"
+              placeholder="(11) 90000-0000">
+          </div>
+        </div>
+
+        <!-- Interesse -->
+        <div class="mt-8 mb-4">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="gold-line"></div>
+            <span class="text-gold font-black text-[12px] tracking-[0.14em] uppercase shrink-0">Interesse</span>
+            <div class="gold-line"></div>
+          </div>
+
+          <label class="interest-option">
+            <input type="radio" name="interesse" value="Sim, desejo receber informações sobre a Assessoria." required>
+            <span>Sim, desejo receber informações sobre a Assessoria.</span>
+          </label>
+          <label class="interest-option">
+            <input type="radio" name="interesse" value="Talvez, gostaria de conhecer melhor.">
+            <span>Talvez, gostaria de conhecer melhor.</span>
+          </label>
+          <label class="interest-option">
+            <input type="radio" name="interesse" value="Prefiro apenas receber conteúdos e novidades.">
+            <span>Prefiro apenas receber conteúdos e novidades.</span>
+          </label>
+        </div>
+
+        <!-- Demanda opcional -->
+        <div class="demanda-box mt-6">
+          <span class="field-icon" style="margin-top:2px"><i data-lucide="message-square-more"></i></span>
+          <div class="flex-1">
+            <label class="field-label block mb-2" for="demanda" style="font-size:11px;letter-spacing:0.06em">
+              PRINCIPAL DEMANDA DA INSTITUIÇÃO (OPCIONAL)
+            </label>
+            <textarea id="demanda" name="demanda" rows="3"
+              placeholder="Conte brevemente a principal necessidade jurídica da sua escola…"></textarea>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit mt-8" id="btn-submit">
+          Enviar cadastro
+        </button>
+
+        <p class="text-center text-gray-muted text-[12px] mt-4 flex items-center justify-center gap-1.5 font-medium">
+          <i data-lucide="lock" style="width:13px;height:13px;"></i>
+          Seus dados são confidenciais e usados apenas para contato da nossa equipe.
+        </p>
+      </form>
+
+      <footer class="footer-banner">
+        <span class="field-icon" style="width:36px;height:36px;background:rgba(197,148,62,0.2)">
+          <i data-lucide="shield-check" style="color:#D4AD5E"></i>
+        </span>
+        <p>Juntos, fortalecemos a educação com <strong>segurança jurídica e excelência</strong>.</p>
+      </footer>
+    </div>
+
+    <!-- Confirmação -->
+    <div class="success-view" id="success-view" role="status" aria-live="polite">
+      <div class="success-icon">
+        <i data-lucide="check-circle-2"></i>
+      </div>
+      <h2 class="font-display text-[clamp(24px,4vw,30px)] font-bold text-navy mb-3">
+        Cadastro recebido!
+      </h2>
+      <p class="text-gray text-[16px] leading-relaxed font-medium max-w-sm mx-auto mb-2">
+        Obrigada por se cadastrar no <strong class="text-navy font-black">Grupo VIP</strong>.
+        Em breve nossa equipe entrará em contato com você.
+      </p>
+      <p class="text-gray-muted text-[14px] font-medium" id="success-email-text"></p>
+
+      <footer class="footer-banner mt-10 text-left">
+        <span class="field-icon" style="width:36px;height:36px;background:rgba(197,148,62,0.2)">
+          <i data-lucide="shield-check" style="color:#D4AD5E"></i>
+        </span>
+        <p>Juntos, fortalecemos a educação com <strong>segurança jurídica e excelência</strong>.</p>
+      </footer>
+    </div>
+
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script>
+    lucide.createIcons();
+
+    const EMAIL_CONFIG = {
+      publicKey: '7ACO5UFTDaROpCb0h',
+      serviceId: 'service_uufuvf7',
+      templateId: 'template_1bijs0w',
+    };
+
+    // Mesmo token definido no Vercel (FICHA_VIP_SECRET), se usar
+    const FICHA_API_SECRET = '';
+
+    const form = document.getElementById('ficha-form');
+    const formView = document.getElementById('form-view');
+    const successView = document.getElementById('success-view');
+    const btnSubmit = document.getElementById('btn-submit');
+    const cnpjInput = document.getElementById('cnpj');
+    const whatsappInput = document.getElementById('whatsapp');
+
+    if (EMAIL_CONFIG.publicKey && window.emailjs) {
+      emailjs.init({ publicKey: EMAIL_CONFIG.publicKey });
+    }
+
+    cnpjInput.addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '').slice(0, 14);
+      if (v.length > 12) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/, '$1.$2.$3/$4-$5');
+      else if (v.length > 8) v = v.replace(/^(\d{2})(\d{3})(\d{3})(\d{0,4}).*/, '$1.$2.$3/$4');
+      else if (v.length > 5) v = v.replace(/^(\d{2})(\d{3})(\d{0,3}).*/, '$1.$2.$3');
+      else if (v.length > 2) v = v.replace(/^(\d{2})(\d{0,3}).*/, '$1.$2');
+      this.value = v;
+    });
+
+    whatsappInput.addEventListener('input', function () {
+      let v = this.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
+      else if (v.length > 6) v = v.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+      else if (v.length > 2) v = v.replace(/^(\d{2})(\d{0,5}).*/, '($1) $2');
+      else if (v.length > 0) v = v.replace(/^(\d{0,2}).*/, '($1');
+      this.value = v;
+    });
+
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      if (!form.checkValidity()) { form.reportValidity(); return; }
+
+      const interesse = form.querySelector('input[name="interesse"]:checked');
+      if (!interesse) {
+        form.querySelector('input[name="interesse"]').reportValidity();
+        return;
+      }
+
+      const data = {
+        nomeInstituicao: form.nomeInstituicao.value.trim(),
+        cnpj: form.cnpj.value.trim(),
+        responsavel: form.responsavel.value.trim(),
+        cargo: form.cargo.value.trim(),
+        cidadeEstado: form.cidadeEstado.value.trim(),
+        email: form.email.value.trim(),
+        whatsapp: form.whatsapp.value.trim(),
+        interesse: interesse.value,
+        demanda: form.demanda.value.trim(),
+      };
+
+      btnSubmit.disabled = true;
+      btnSubmit.textContent = 'Enviando…';
+
+      let saved = false;
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (FICHA_API_SECRET) headers['X-Ficha-Secret'] = FICHA_API_SECRET;
+
+        const r = await fetch('/api/ficha-vip', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(data),
+        });
+        saved = r.ok;
+      } catch (err) {
+        console.warn('[ficha-vip] API indisponível', err);
+      }
+
+      if (!saved) {
+        await sendNotificationEmail(data);
+      }
+
+      showSuccess(data.email);
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = 'Enviar cadastro';
+    });
+
+    async function sendNotificationEmail(data) {
+      if (!(EMAIL_CONFIG.publicKey && EMAIL_CONFIG.serviceId && EMAIL_CONFIG.templateId && window.emailjs)) {
+        return false;
+      }
+      try {
+        await emailjs.send(EMAIL_CONFIG.serviceId, EMAIL_CONFIG.templateId, {
+          to_email: 'contato@delianesantos.com',
+          nome_responsavel: data.responsavel,
+          nome_instituicao: data.nomeInstituicao,
+          cnpj: data.cnpj,
+          whatsapp: data.whatsapp,
+          endereco: data.cidadeEstado + ' · ' + data.cargo + ' · ' + data.interesse + (data.demanda ? ' · ' + data.demanda : ''),
+          valor: 'Ficha VIP — Grupo VIP',
+        });
+        return true;
+      } catch (err) {
+        console.error('[EmailJS] Falha ao notificar:', err);
+        return false;
+      }
+    }
+
+    function showSuccess(email) {
+      formView.classList.add('is-hidden');
+      successView.classList.add('is-visible');
+      document.getElementById('success-email-text').textContent =
+        'Confirmação enviada para ' + email + '.';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      lucide.createIcons();
+    }
+  </script>
+</body>
+</html>

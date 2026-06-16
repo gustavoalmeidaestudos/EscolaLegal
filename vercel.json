@@ -3,6 +3,7 @@
   "trailingSlash": false,
   "redirects": [
     { "source": "/", "destination": "/escola-legal", "permanent": false },
-    { "source": "/index", "destination": "/escola-legal", "permanent": false }
+    { "source": "/index", "destination": "/escola-legal", "permanent": false },
+    { "source": "/fichavip", "destination": "/ficha-cadastral", "permanent": false }
   ]
 }
